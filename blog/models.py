@@ -5,7 +5,6 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     social_acc = models.CharField(max_length=255, blank=True, null=True)
 
-    # Override the related_name for groups and user_permissions
     groups = models.ManyToManyField(
         Group,
         related_name='custom_user_set',
@@ -24,6 +23,7 @@ class Post(models.Model):
     post_text = models.TextField()
     post_datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
+    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  # เพิ่มฟิลด์นี้
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
