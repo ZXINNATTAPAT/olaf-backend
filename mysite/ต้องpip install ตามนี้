@@ -1,0 +1,2 @@
+
+pip install django djangorestframework djangorestframework-authtoken django-cors-headers pillow

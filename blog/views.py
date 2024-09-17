@@ -21,3 +21,5 @@ class PostLikeViewSet(viewsets.ModelViewSet):
 class CommentLikeViewSet(viewsets.ModelViewSet):
     queryset = CommentLike.objects.all()
     serializer_class = CommentLikeSerializer
+
+
