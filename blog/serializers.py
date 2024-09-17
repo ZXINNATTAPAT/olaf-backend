@@ -4,7 +4,7 @@ from .models import User, Post, Comment, PostLike, CommentLike
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'email']
+        fields = ['id', 'username', 'phone', 'social_acc', 'email']
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,3 +25,19 @@ class CommentLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentLike
         fields = ['comment', 'user']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'password', 'phone', 'social_acc', 'email')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            phone=validated_data.get('phone'),
+            social_acc=validated_data.get('social_acc'),
+            email=validated_data.get('email')
+        )
+        return user

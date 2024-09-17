@@ -5,20 +5,6 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     social_acc = models.CharField(max_length=255, blank=True, null=True)
 
-    # Override the related_name for groups and user_permissions
-    groups = models.ManyToManyField(
-        Group,
-        related_name='custom_user_set',
-        blank=True,
-        help_text='The groups this user belongs to.'
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        related_name='custom_user_permissions',
-        blank=True,
-        help_text='Specific permissions for this user.'
-    )
-
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
     post_text = models.TextField()

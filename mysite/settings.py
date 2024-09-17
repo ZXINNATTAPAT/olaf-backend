@@ -26,9 +26,8 @@ SECRET_KEY = 'django-insecure-^-4vm11*r=p3bsa%+8_)cnie!u!@$hcafk!azc98$-ur3=@3w-
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# CORS_ALLOW_ALL_ORIGINS = True  # เปิดให้ทุกโดเมนเข้าถึงได้
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -37,10 +36,36 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'blog',
+    'blog',  # Your app
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
+# Add REST Framework settings
+# อันที่สองใช้ตรวจสอบสิทธิ์ทุก API
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+ROOT_URLCONF = 'mysite.urls'
+
+
+# Add Simple JWT settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -51,7 +76,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'mysite.urls'
+# Define the custom user model
+AUTH_USER_MODEL = 'blog.User'
+
 
 TEMPLATES = [
     {
