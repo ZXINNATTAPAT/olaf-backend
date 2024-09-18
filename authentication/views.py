@@ -24,8 +24,12 @@ class LoginView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         
+        print(f'Authenticated user: {user}')
+
         token, created = Token.objects.get_or_create(user=user)
         
+        print(f'Token created: {created}, Token key: {token.key}')
+
         return Response({
             'token': token.key,
             'user_id': user.id,
