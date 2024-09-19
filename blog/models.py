@@ -20,11 +20,12 @@ class User(AbstractUser):
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=255, blank=True, null=True)  # Allow null for title
+    header = models.CharField(max_length=255, blank=True, null=True)  
+    short = models.CharField(max_length=255, blank=True, null=True)  
     post_text = models.TextField()
     post_datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  # Image field
+    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  
 
     def __str__(self):
         return self.title if self.title else 'Untitled Post'
