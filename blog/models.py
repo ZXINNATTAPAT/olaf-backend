@@ -20,10 +20,14 @@ class User(AbstractUser):
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255, blank=True, null=True)  # Allow null for title
     post_text = models.TextField()
     post_datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  # เพิ่มฟิลด์นี้
+    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  # Image field
+
+    def __str__(self):
+        return self.title if self.title else 'Untitled Post'
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
@@ -32,6 +36,9 @@ class Comment(models.Model):
     comment_datetime = models.DateTimeField(auto_now_add=True)
     comment_text = models.TextField()
 
+    def __str__(self):
+        return f'Comment by {self.user.username} on {self.post.title if self.post.title else "Untitled Post"}'
+
 class PostLike(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_likes')
@@ -39,9 +46,15 @@ class PostLike(models.Model):
     class Meta:
         unique_together = ('post', 'user')
 
+    def __str__(self):
+        return f'{self.user.username} likes {self.post.title if self.post.title else "an Untitled Post"}'
+
 class CommentLike(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_likes')
 
     class Meta:
         unique_together = ('comment', 'user')
+
+    def __str__(self):
+        return f'{self.user.username} likes a comment on {self.comment.post.title if self.comment.post.title else "an Untitled Post"}'
