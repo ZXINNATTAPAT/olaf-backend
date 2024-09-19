@@ -2,7 +2,7 @@ from rest_framework import generics
 from .serializers import RegisterSerializer,LoginSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 class RegisterView(generics.CreateAPIView):
@@ -16,6 +16,7 @@ class RegisterView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
 
+
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
 
@@ -23,11 +24,15 @@ class LoginView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        
-        token, created = Token.objects.get_or_create(user=user)
-        
+
+        token = AccessToken.for_user(user)
+
         return Response({
-            'token': token.key,
+            'token': str(token),
             'user_id': user.id,
-            'username': user.username
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'phone': user.phone,  
+            'email': user.email
         }, status=status.HTTP_200_OK)
