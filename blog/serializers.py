@@ -9,20 +9,20 @@ class UserSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['post_id', 'post_text', 'post_datetime', 'user','image','header','short']
+        fields = ['post_id', 'post_text', 'post_datetime', 'user', 'image', 'header', 'short', 'like_count']
 
 class CommentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Comment
-        fields = ['comment_id', 'post', 'user', 'comment_datetime', 'comment_text']
+        fields = ['comment_id', 'post', 'user', 'comment_datetime', 'comment_text', 'like_count']
 
 class PostLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostLike
-        fields = ['post', 'user']
+        fields = ['post', 'user', 'id']
 
 class CommentLikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentLike
-        fields = ['comment', 'user']
-
+        fields = ['comment', 'user', 'id']

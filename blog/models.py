@@ -28,7 +28,11 @@ class Post(models.Model):
     image = models.ImageField(upload_to='posts/images/', blank=True, null=True)  
 
     def __str__(self):
-        return self.title if self.title else 'Untitled Post'
+        return self.header if self.header else 'Untitled Post'
+    
+    @property
+    def like_count(self):
+        return self.likes.count()
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
@@ -38,7 +42,11 @@ class Comment(models.Model):
     comment_text = models.TextField()
 
     def __str__(self):
-        return f'Comment by {self.user.username} on {self.post.title if self.post.title else "Untitled Post"}'
+        return f'Comment by {self.user.username} on {self.post.header if self.post.header else "Untitled Post"}'
+    
+    @property
+    def like_count(self):
+        return self.likes.count()
 
 class PostLike(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')
@@ -48,7 +56,7 @@ class PostLike(models.Model):
         unique_together = ('post', 'user')
 
     def __str__(self):
-        return f'{self.user.username} likes {self.post.title if self.post.title else "an Untitled Post"}'
+        return f'{self.user.username} likes {self.post.header if self.post.header else "an Untitled Post"}'
 
 class CommentLike(models.Model):
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes')
@@ -58,4 +66,4 @@ class CommentLike(models.Model):
         unique_together = ('comment', 'user')
 
     def __str__(self):
-        return f'{self.user.username} likes a comment on {self.comment.post.title if self.comment.post.title else "an Untitled Post"}'
+        return f'{self.user.username} likes a comment on {self.comment.post.header if self.comment.post.header else "an Untitled Post"}'
