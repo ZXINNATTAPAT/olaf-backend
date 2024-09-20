@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['post_id', 'post_text', 'post_datetime', 'user','image']
+        fields = ['post_id', 'post_text', 'post_datetime', 'user','image','header','short']
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
