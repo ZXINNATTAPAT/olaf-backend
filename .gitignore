@@ -1,1 +1,3 @@
 .venv/
+authentication/__pycache__
+media/posts/
