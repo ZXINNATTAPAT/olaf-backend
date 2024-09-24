@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
     'corsheaders.middleware.CorsMiddleware',
 
 ]
@@ -66,15 +68,29 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # อายุการใช้งาน Access Token เป็น 60 นาที (1 ชั่วโมง)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # อายุการใช้งาน Refresh Token เป็น 7 วัน
+    'ROTATE_REFRESH_TOKENS': True,                   # ทำการหมุนเวียน (rotate) Refresh Token ทุกครั้งที่มีการรีเฟรช
+    'BLACKLIST_AFTER_ROTATION': True,                # ทำการแบล็กลิสต์ Refresh Token เดิมหลังจากหมุนเวียน
+    'ALGORITHM': 'HS256',                            # เลือกใช้การเข้ารหัสแบบ HS256
+    'SIGNING_KEY': SECRET_KEY,                       # ใช้ SECRET_KEY ของ Django เป็น Signing Key
 }
+
+# CORS_ALLOW_HEADERS = list(default_headers) + [
+#     'credentials',
+#     # สามารถเพิ่ม header อื่น ๆ ที่คุณต้องการอนุญาต
+# ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODEL = 'blog.User'
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    # สามารถเพิ่ม URL อื่น ๆ ที่คุณต้องการอนุญาต
+]
+
 
 ROOT_URLCONF = 'mysite.urls'
 
