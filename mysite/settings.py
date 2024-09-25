@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'authentication',
     'rest_framework',
     'rest_framework.authtoken',
+    # "rest_framework_simplejwt.token_blacklist",    
     'corsheaders',
 ]
 
@@ -69,28 +70,36 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # อายุการใช้งาน Access Token เป็น 60 นาที (1 ชั่วโมง)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # อายุการใช้งาน Refresh Token เป็น 7 วัน
-    'ROTATE_REFRESH_TOKENS': True,                   # ทำการหมุนเวียน (rotate) Refresh Token ทุกครั้งที่มีการรีเฟรช
-    'BLACKLIST_AFTER_ROTATION': True,                # ทำการแบล็กลิสต์ Refresh Token เดิมหลังจากหมุนเวียน
-    'ALGORITHM': 'HS256',                            # เลือกใช้การเข้ารหัสแบบ HS256
-    'SIGNING_KEY': SECRET_KEY,                       # ใช้ SECRET_KEY ของ Django เป็น Signing Key
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    # custom
+    "AUTH_COOKIE": "access_token",  # cookie name
+    "AUTH_COOKIE_DOMAIN": None,  # specifies domain for which the cookie will be sent
+    "AUTH_COOKIE_SECURE": False,  # restricts the transmission of the cookie to only occur over secure (HTTPS) connections. 
+    "AUTH_COOKIE_HTTP_ONLY": True,  # prevents client-side js from accessing the cookie
+    "AUTH_COOKIE_PATH": "/",  # URL path where cookie will be sent
+    "AUTH_COOKIE_SAMESITE": "Lax",  # specifies whether the cookie should be sent in cross site requests
 }
 
-# CORS_ALLOW_HEADERS = list(default_headers) + [
-#     'credentials',
-#     # สามารถเพิ่ม header อื่น ๆ ที่คุณต้องการอนุญาต
-# ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # URL ของ frontend ของคุณ
+]
+
+# CORS_ORIGIN_ALLOW_ALL = True
 
 AUTH_USER_MODEL = 'blog.User'
 
+SESSION_COOKIE_PATH = '/;HttpOnly'
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    # สามารถเพิ่ม URL อื่น ๆ ที่คุณต้องการอนุญาต
 ]
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",  # หรือโดเมนที่คุณใช้
+]
 
 ROOT_URLCONF = 'mysite.urls'
 
@@ -168,3 +177,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL  = "api"
 LOGOUT_REDIRECT_URL  = "api"
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',  # ระดับการแสดง log (เช่น DEBUG, INFO, WARNING)
+#         },
+#         'your_app_name': {  # ตั้งชื่อให้ตรงกับแอปที่คุณต้องการ
+#             'handlers': ['console'],
+#             'level': 'INFO',  # ตั้งค่าให้ตรงกับระดับ log ที่ต้องการ
+#         },
+#     },
+# }
