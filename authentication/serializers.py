@@ -1,36 +1,53 @@
 from rest_framework import serializers
-from blog.models import User
-from django.contrib.auth import authenticate
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Only include this field for input
+
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(style={"input_type": "password"})
 
     class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'phone', 'email', 'password']
+        model = get_user_model()
+        fields = ("username", "email", "first_name", "last_name", "phone", "password", "password2")
+        extra_kwargs = {
+            "password": {"write_only": True},
+            "password2": {"write_only": True}
+        }
 
-    def create(self, validated_data):
-        password = validated_data.pop('password') 
-        user = User(**validated_data)  
-        user.set_password(password)  
-        user.save()  
+    def save(self):
+        user = get_user_model()(
+            email=self.validated_data["email"],
+            username=self.validated_data["username"],
+            first_name=self.validated_data["first_name"],  # New field
+            last_name=self.validated_data["last_name"],    # New field
+            phone=self.validated_data["phone"],            # New field
+        )
+
+        password = self.validated_data["password"]
+        password2 = self.validated_data["password2"]
+
+        if password != password2:
+            raise serializers.ValidationError(
+                {"password": "Passwords do not match!"}
+            )
+
+        user.set_password(password)
+        user.save()
+
         return user
 
+
+
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        style={"input_type": "password"}, write_only=True)
 
-    def validate(self, data):
-        username = data.get('username')
-        password = data.get('password')
-        
-        print(f'Attempting login with username: {username} and password: {password}')
 
-        user = authenticate(username=username, password=password)
-        
-        if user is None:
-            raise serializers.ValidationError("Invalid credentials")
-        
-        return {
-            'user': user
-        }
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ("username", "email")

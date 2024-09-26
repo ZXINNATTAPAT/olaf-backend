@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'authentication',
     'rest_framework',
     'rest_framework.authtoken',
-    # "rest_framework_simplejwt.token_blacklist",    
+    "rest_framework_simplejwt.token_blacklist",    
     'corsheaders',
 ]
 
@@ -58,41 +58,62 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
     'corsheaders.middleware.CorsMiddleware',
-
 ]
 
+# REST Framework Settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'authentication.authenticate.CustomAuthentication',
     ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        'rest_framework.permissions.AllowAny',
+    ]
 }
 
+# JWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    'BLACKLIST_AFTER_ROTATION': True,
-
-    # custom
-    "AUTH_COOKIE": "access_token",  # cookie name
-    "AUTH_COOKIE_DOMAIN": None,  # specifies domain for which the cookie will be sent
-    "AUTH_COOKIE_SECURE": False,  # restricts the transmission of the cookie to only occur over secure (HTTPS) connections. 
-    "AUTH_COOKIE_HTTP_ONLY": True,  # prevents client-side js from accessing the cookie
-    "AUTH_COOKIE_PATH": "/",  # URL path where cookie will be sent
-    "AUTH_COOKIE_SAMESITE": "Lax",  # specifies whether the cookie should be sent in cross site requests
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_COOKIE': 'access',
+    'AUTH_COOKIE_REFRESH': 'refresh',
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SECURE': False,  # เปลี่ยนเป็น True ใน production
+    'AUTH_COOKIE_SAMESITE': "Lax",
 }
 
-CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # URL ของ frontend ของคุณ
+    "http://localhost:3000",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+
+
+# CSRF Settings
+CSRF_COOKIE_SECURE = True  # CSRF cookie should be secure
+CSRF_COOKIE_HTTP_ONLY = True  # CSRF cookie should not be accessible via JavaScript
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000"
 ]
 
-# CORS_ORIGIN_ALLOW_ALL = True
+# Expose CSRF token in headers
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 
-AUTH_USER_MODEL = 'blog.User'
+# Session and Cookie Settings
+SESSION_COOKIE_SECURE = False  # Set to True in production for HTTPS
+CSRF_COOKIE_SAMESITE = "Lax"  # Lax setting for CSRF cookies, adjusts behavior for cross-site requests
+SESSION_COOKIE_SAMESITE = "Lax"  # Lax setting for session cookies
 
-SESSION_COOKIE_PATH = '/;HttpOnly'
+
+
+
+
+# AUTH_USER_MODEL = 'blog.User'
+AUTH_USER_MODEL = 'authentication.Account'
+
+# SESSION_COOKIE_PATH = '/;HttpOnly'
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -178,22 +199,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL  = "api"
 LOGOUT_REDIRECT_URL  = "api"
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['console'],
-#             'level': 'DEBUG',  # ระดับการแสดง log (เช่น DEBUG, INFO, WARNING)
-#         },
-#         'your_app_name': {  # ตั้งชื่อให้ตรงกับแอปที่คุณต้องการ
-#             'handlers': ['console'],
-#             'level': 'INFO',  # ตั้งค่าให้ตรงกับระดับ log ที่ต้องการ
-#         },
-#     },
-# }
+

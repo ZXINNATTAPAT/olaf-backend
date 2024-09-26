@@ -1,10 +1,12 @@
 from rest_framework import serializers
-from .models import User, Post, Comment, PostLike, CommentLike
+from .models import  Post, Comment, PostLike, CommentLike
+from authentication.models import Account
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'email']
+        model = Account
+        # fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'email']
+        fields = ['id', 'username','email']
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:

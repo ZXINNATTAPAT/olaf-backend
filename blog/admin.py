@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import User, Post, Comment, PostLike, CommentLike
+from blog.models import  Post, Comment, PostLike, CommentLike
 
 # UserAdmin for custom User model
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'first_name', 'last_name', 'phone', 'email')
-    search_fields = ('username', 'first_name', 'last_name', 'email')
+# class UserAdmin(admin.ModelAdmin):
+#     list_display = ('username', 'first_name', 'last_name', 'phone', 'email')
+#     search_fields = ('username', 'first_name', 'last_name', 'email')
 
 # PostAdmin
 class PostAdmin(admin.ModelAdmin):
@@ -29,7 +29,7 @@ class CommentLikeAdmin(admin.ModelAdmin):
     search_fields = ('comment__comment_text', 'user__username')
 
 # Register models with the admin site
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment, CommentAdmin)
 admin.site.register(PostLike, PostLikeAdmin)

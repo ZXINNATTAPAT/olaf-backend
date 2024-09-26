@@ -1,9 +1,11 @@
 from rest_framework import viewsets
-from .models import User, Post, Comment, PostLike, CommentLike
+from .models import  Post, Comment, PostLike, CommentLike
+from authentication.models import Account
 from .serializers import UserSerializer, PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
 
+
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = Account.objects.all()
     serializer_class = UserSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -17,6 +19,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class PostLikeViewSet(viewsets.ModelViewSet):
     queryset = PostLike.objects.all()
     serializer_class = PostLikeSerializer
+    
 class CommentLikeViewSet(viewsets.ModelViewSet):
     queryset = CommentLike.objects.all()
     serializer_class = CommentLikeSerializer
