@@ -5,8 +5,8 @@ from authentication.models import Account
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        # fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'email']
-        fields = ['id', 'username','email']
+        fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'email']
+        # fields = ['id', 'username','email']
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
