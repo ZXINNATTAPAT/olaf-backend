@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# STATIC_URL = 'static/'
+STATIC_URL = 'static/'
 # STATICFILES_DIRS = [     # ไดเรกทอรีที่ใช้เก็บไฟล์ static ในระหว่างการพัฒนา
 #     BASE_DIR / "static",
 # ]
