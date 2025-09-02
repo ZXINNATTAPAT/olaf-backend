@@ -1,0 +1,41 @@
+[core]
+    editor = code --wait
+    autocrlf = input
+
+[pull]
+    rebase = true
+
+[rebase]
+    autoStash = true
+
+[merge]
+    tool = vscode
+
+[diff]
+    tool = vscode
+
+[push]
+    default = simple
+
+[alias]
+    # Useful aliases for rebase workflow
+    rb = rebase
+    rbi = rebase --interactive
+    rbc = rebase --continue
+    rba = rebase --abort
+    rbs = rebase --skip
+    
+    # Pull with rebase
+    pl = pull --rebase
+    
+    # Log with graph
+    lg = log --oneline --graph --decorate --all
+    
+    # Status short
+    st = status -s
+    
+    # Add all and commit
+    ac = !git add -A && git commit
+    
+    # Push current branch
+    pushup = !git push -u origin $(git branch --show-current)
