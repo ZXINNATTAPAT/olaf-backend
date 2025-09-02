@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['olaf-backend.onrender.com']
+ALLOWED_HOSTS = ['olaf-backend.onrender.com', '127.0.0.1', 'localhost']
 
 
 # Application definition
