@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.core.validators import RegexValidator
+from utils.validators import validate_phone_number, validate_username
 
 class AccountManager(BaseUserManager):
     def create_user(self, email, username, first_name, last_name, phone, password=None, **kwargs):
@@ -48,11 +50,38 @@ class AccountManager(BaseUserManager):
         return user
 
 class Account(AbstractBaseUser):
-    email = models.EmailField(null=False, blank=False, unique=True)
-    username = models.CharField(max_length=50, blank=False, null=False)
-    first_name = models.CharField(max_length=30, default="", null=False)
-    last_name = models.CharField(max_length=30, default="", null=False)
-    phone = models.CharField(max_length=15, default="", null=False)  # Add phone field
+    email = models.EmailField(
+        null=False, 
+        blank=False, 
+        unique=True,
+        help_text="User's email address"
+    )
+    username = models.CharField(
+        max_length=50, 
+        blank=False, 
+        null=False,
+        validators=[validate_username],
+        help_text="Username (3-50 characters, letters, numbers, and underscores only)"
+    )
+    first_name = models.CharField(
+        max_length=30, 
+        blank=False, 
+        null=False,
+        help_text="User's first name"
+    )
+    last_name = models.CharField(
+        max_length=30, 
+        blank=False, 
+        null=False,
+        help_text="User's last name"
+    )
+    phone = models.CharField(
+        max_length=15, 
+        blank=False, 
+        null=False,
+        validators=[validate_phone_number],
+        help_text="Phone number in Thai format"
+    )
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -70,7 +99,18 @@ class Account(AbstractBaseUser):
         return self.username
 
     def has_perm(self, perm, obj=None):
-         return True
+        return self.is_admin
 
     def has_module_perms(self, app_label):
-        return True
+        return self.is_admin
+
+    @property
+    def full_name(self):
+        """Return user's full name."""
+        return f"{self.first_name} {self.last_name}".strip()
+
+    class Meta:
+        db_table = 'accounts'
+        verbose_name = 'Account'
+        verbose_name_plural = 'Accounts'
+        ordering = ['-created_at']
