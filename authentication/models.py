@@ -109,8 +109,16 @@ class Account(AbstractBaseUser):
         """Return user's full name."""
         return f"{self.first_name} {self.last_name}".strip()
 
+    def get_short_name(self):
+        """Return the short name for the user."""
+        return self.first_name
+
+    def get_full_name(self):
+        """Return the full name for the user."""
+        return self.full_name
+
     class Meta:
-        db_table = 'accounts'
+        db_table = 'authentication_account'
         verbose_name = 'Account'
         verbose_name_plural = 'Accounts'
         ordering = ['-created_at']
