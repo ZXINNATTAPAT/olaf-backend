@@ -24,10 +24,6 @@ class Post(models.Model):
         auto_now_add=True,
         help_text="When the post was created"
     )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        help_text="When the post was last updated"
-    )
     user = models.ForeignKey(
         Account, 
         on_delete=models.CASCADE, 
@@ -40,10 +36,6 @@ class Post(models.Model):
         null=True,
         validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif'])],
         help_text="Post image (JPG, PNG, GIF only)"
-    )
-    is_published = models.BooleanField(
-        default=True,
-        help_text="Whether the post is published"
     )
 
     def __str__(self):
@@ -60,7 +52,7 @@ class Post(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        db_table = 'posts'
+        db_table = 'blog_post'
         verbose_name = 'Post'
         verbose_name_plural = 'Posts'
         ordering = ['-post_datetime']
@@ -83,16 +75,8 @@ class Comment(models.Model):
         auto_now_add=True,
         help_text="When the comment was created"
     )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        help_text="When the comment was last updated"
-    )
     comment_text = models.TextField(
         help_text="Content of the comment"
-    )
-    is_edited = models.BooleanField(
-        default=False,
-        help_text="Whether the comment has been edited"
     )
 
     def __str__(self):
@@ -103,7 +87,7 @@ class Comment(models.Model):
         return self.likes.count()
 
     class Meta:
-        db_table = 'comments'
+        db_table = 'blog_comment'
         verbose_name = 'Comment'
         verbose_name_plural = 'Comments'
         ordering = ['-comment_datetime']
@@ -121,14 +105,10 @@ class PostLike(models.Model):
         related_name='post_likes',
         help_text="User who liked the post"
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="When the like was created"
-    )
 
     class Meta:
         unique_together = ('post', 'user')
-        db_table = 'post_likes'
+        db_table = 'blog_postlike'
         verbose_name = 'Post Like'
         verbose_name_plural = 'Post Likes'
 
@@ -148,14 +128,10 @@ class CommentLike(models.Model):
         related_name='comment_likes',
         help_text="User who liked the comment"
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="When the like was created"
-    )
 
     class Meta:
         unique_together = ('comment', 'user')
-        db_table = 'comment_likes'
+        db_table = 'blog_commentlike'
         verbose_name = 'Comment Like'
         verbose_name_plural = 'Comment Likes'
 
