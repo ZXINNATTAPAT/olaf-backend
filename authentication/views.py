@@ -1,9 +1,13 @@
 from django.contrib.auth import authenticate
 from django.conf import settings
 from django.middleware import csrf
+from django.core.cache import cache
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
-from authentication import serializers, models
+from authentication import serializers, models, tasks
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_user_tokens(user):
@@ -62,6 +66,19 @@ def registerView(request):
     user = serializer.save()
 
     if user is not None:
+        # Send welcome email asynchronously
+        tasks.send_welcome_email.delay(user.id)
+        
+        # Cache user data for faster access
+        cache_key = f"user_{user.id}"
+        cache.set(cache_key, {
+            'id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'full_name': user.full_name,
+        }, timeout=3600)  # Cache for 1 hour
+        
+        logger.info(f"New user registered: {user.email}")
         return response.Response("Registered!")
     return rest_exceptions.AuthenticationFailed("Invalid credentials!")
 
@@ -122,9 +139,37 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
 @rest_decorators.permission_classes([rest_permissions.IsAuthenticated])
 def user(request):
     try:
+        # Try to get user from cache first
+        cache_key = f"user_{request.user.id}"
+        cached_user = cache.get(cache_key)
+        
+        if cached_user:
+            # Update activity asynchronously
+            tasks.update_user_activity.delay(request.user.id)
+            return response.Response(cached_user)
+        
+        # If not in cache, get from database
         user = models.Account.objects.get(id=request.user.id)
+        
+        # Cache the user data
+        user_data = {
+            'id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'full_name': user.full_name,
+            'phone': user.phone,
+            'created_at': user.created_at,
+            'updated_at': user.updated_at,
+        }
+        cache.set(cache_key, user_data, timeout=3600)  # Cache for 1 hour
+        
+        # Update activity asynchronously
+        tasks.update_user_activity.delay(request.user.id)
+        
+        serializer = serializers.AccountSerializer(user)
+        return response.Response(serializer.data)
+        
     except models.Account.DoesNotExist:
         return response.Response(status_code=404)
-
-    serializer = serializers.AccountSerializer(user)
-    return response.Response(serializer.data)
