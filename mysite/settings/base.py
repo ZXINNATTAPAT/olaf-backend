@@ -31,6 +31,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist',
+    'django_redis',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -71,13 +73,58 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
-# Database
+# Database - MongoDB Atlas Configuration with MongoEngine
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# MongoEngine Configuration
+import mongoengine
+
+# Check if we have a real MongoDB Atlas URI
+mongodb_atlas_uri = os.environ.get('MONGODB_ATLAS_URI', '')
+use_local_mongodb = not mongodb_atlas_uri or 'username:password@cluster.mongodb.net' in mongodb_atlas_uri
+
+if use_local_mongodb:
+    # Use local MongoDB for development
+    MONGODB_SETTINGS = {
+        'db': os.environ.get('MONGODB_DATABASE', 'olaf_backend'),
+        'host': os.environ.get('MONGODB_HOST', 'mongodb://localhost:27017/'),
+    }
+    print("🔧 Using local MongoDB for development")
+else:
+    # Use MongoDB Atlas
+    MONGODB_SETTINGS = {
+        'db': os.environ.get('MONGODB_DATABASE', 'olaf_backend'),
+        'host': os.environ.get('MONGODB_ATLAS_URI', 'mongodb+srv://username:password@cluster.mongodb.net/'),
+        'username': os.environ.get('MONGODB_USERNAME', ''),
+        'password': os.environ.get('MONGODB_PASSWORD', ''),
+        'authentication_source': os.environ.get('MONGODB_AUTH_SOURCE', 'admin'),
+        'authentication_mechanism': os.environ.get('MONGODB_AUTH_MECHANISM', 'SCRAM-SHA-1'),
+        'retryWrites': True,
+        'w': 'majority',
+        'serverSelectionTimeoutMS': 30000,
+        'connectTimeoutMS': 30000,
+        'socketTimeoutMS': 30000,
+        'maxPoolSize': 10,
+        'minPoolSize': 1,
+        'maxIdleTimeMS': 30000,
+        'waitQueueTimeoutMS': 5000,
+        'ssl': True,
+        'ssl_cert_reqs': 0,
+    }
+    print("🌐 Using MongoDB Atlas")
+
+# Connect to MongoDB
+try:
+    mongoengine.connect(**MONGODB_SETTINGS)
+    print("✅ Connected to MongoDB successfully!")
+except Exception as e:
+    print(f"⚠️ MongoDB connection failed: {e}")
+    print("Using SQLite as fallback...")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -190,6 +237,53 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 20,
 }
 
+# Cache Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            },
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'SERIALIZER': 'django_redis.serializers.json.JSONSerializer',
+        },
+        'KEY_PREFIX': 'olaf_backend',
+        'TIMEOUT': 300,  # 5 minutes default timeout
+    }
+}
+
+# Session Configuration with Redis
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# Celery Configuration
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://127.0.0.1:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# MongoDB Optimizations
+MONGODB_INDEXES = {
+    'authentication_account': [
+        {'email': 1},
+        {'username': 1},
+        {'created_at': -1},
+    ],
+    'blog_post': [
+        {'title': 'text', 'content': 'text'},
+        {'created_at': -1},
+        {'author': 1},
+    ],
+}
+
 # Logging
 LOGGING = {
     'version': 1,
@@ -235,6 +329,11 @@ LOGGING = {
         'blog': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
+            'propagate': False,
+        },
+        'djongo': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
             'propagate': False,
         },
     },
