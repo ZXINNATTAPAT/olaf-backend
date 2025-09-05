@@ -38,6 +38,10 @@ media/
 staticfiles/
 static/
 
+# PostgreSQL
+*.sql
+*.dump
+
 # Environment variables
 .env
 .env.local

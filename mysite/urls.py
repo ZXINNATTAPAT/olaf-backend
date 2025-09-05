@@ -6,5 +6,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('blog.urls')),  
-    path('api/auth/',include('authentication.urls' ,namespace='authentication'))
+    path('api/auth/',include('authentication.urls' ,namespace='authentication')),
+    path('api/clouddiary/', include('clouddiary.urls', namespace='clouddiary'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
