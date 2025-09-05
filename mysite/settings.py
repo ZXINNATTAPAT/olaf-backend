@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +39,7 @@ SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['olaf-backend.onrender.com']
+ALLOWED_HOSTS = ['olaf-backend.onrender.com','127.0.0.1']
 
 
 # Application definition
@@ -51,8 +55,10 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt.token_blacklist',
+    'cloudinary',
     "blog",
-    "authentication"
+    "authentication",
+    "clouddiary"
 ]
 
 MIDDLEWARE = [
@@ -93,8 +99,12 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'olaf_backend'),
+        'USER': os.getenv('DB_USER', 'zxin'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -143,6 +153,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:8000",
     "https://olafs.netlify.app"
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -218,3 +229,15 @@ REST_FRAMEWORK = {
 
 
 AUTH_USER_MODEL = "authentication.Account"
+
+# Cloudinary Configuration
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'your_cloud_name'),
+    api_key=os.getenv('CLOUDINARY_API_KEY', 'your_api_key'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', 'your_api_secret'),
+    secure=True
+)

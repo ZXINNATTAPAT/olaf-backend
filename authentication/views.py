@@ -56,14 +56,27 @@ def loginView(request):
 @rest_decorators.api_view(["POST"])
 @rest_decorators.permission_classes([])
 def registerView(request):
-    serializer = serializers.RegistrationSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    try:
+        serializer = serializers.RegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    user = serializer.save()
+        user = serializer.save()
 
-    if user is not None:
-        return response.Response("Registered!")
-    return rest_exceptions.AuthenticationFailed("Invalid credentials!")
+        if user is not None:
+            return response.Response({
+                "message": "User registered successfully!",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "phone": user.phone
+                }
+            }, status=201)
+        return response.Response({"error": "Failed to create user"}, status=400)
+    except Exception as e:
+        return response.Response({"error": str(e)}, status=400)
 
 
 @rest_decorators.api_view(['POST'])
