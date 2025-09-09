@@ -23,4 +23,5 @@ urlpatterns = [
     path('refresh-token/', views.CookieTokenRefreshView.as_view()),
     path('logout/', views.logoutView),
     path("user/", views.user),
+    path('csrf/', views.get_csrf_token, name='get_csrf_token'),
 ]

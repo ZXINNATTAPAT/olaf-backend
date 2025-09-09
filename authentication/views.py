@@ -141,3 +141,16 @@ def user(request):
 
     serializer = serializers.AccountSerializer(user)
     return response.Response(serializer.data)
+
+
+@rest_decorators.api_view(["GET"])
+@rest_decorators.permission_classes([])
+def get_csrf_token(request):
+    """
+    Get CSRF token - Django automatically sets csrftoken cookie
+    Frontend should read from cookie, not response body
+    """
+    csrf_token = csrf.get_token(request)
+    res = response.Response({"message": "CSRF token set in cookie"})
+    res["X-CSRFToken"] = csrf_token
+    return res
