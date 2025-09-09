@@ -11,46 +11,33 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.select_related('user').prefetch_related('comments__user', 'likes__user').all()
     serializer_class = PostSerializer
     parser_classes = [MultiPartParser, FormParser]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        
-        # รวมข้อมูลยอดไลค์ใน response
-        response_data = serializer.data
-        response_data['like_count'] = instance.like_count  # เพิ่มจำนวนไลค์
-        response_data['liked'] = self.get_like_status(instance, request.user)  # ตรวจสอบสถานะไลค์ของผู้ใช้
-        response_data['comment_count'] = instance.comments.count()
-
-        return Response(response_data)
-
-    def get_like_status(self, post, user):
-        if user.is_authenticated:
-            return post.likes.filter(user=user).exists()
-        return False
+        return Response(serializer.data)
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.select_related('user', 'post').prefetch_related('likes__user').all()
     serializer_class = CommentSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        
-        # รวมข้อมูลยอดไลค์ใน response
-        response_data = serializer.data
-        response_data['like_count'] = instance.like_count  # เพิ่มจำนวนไลค์
-        response_data['liked'] = self.get_like_status(instance, request.user)  # ตรวจสอบสถานะไลค์ของผู้ใช้
-
-        return Response(response_data)
-
-    def get_like_status(self, post, user):
-        if user.is_authenticated:
-            return post.likes.filter(user=user).exists()
-        return False
+        return Response(serializer.data)
 
 class PostLikeViewSet(viewsets.ModelViewSet):
     queryset = PostLike.objects.all()
