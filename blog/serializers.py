@@ -10,13 +10,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    image_secure_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['post_id', 'post_text', 'post_datetime', 'user', 'image', 'header', 'short', 'like_count', 'comment_count']
+        fields = ['post_id', 'post_text', 'post_datetime', 'user', 'image', 'image_url', 'image_secure_url', 'header', 'short', 'like_count', 'comment_count']
 
     def get_comment_count(self, obj):
         return obj.comments.count()
+    
+    def get_image_url(self, obj):
+        return obj.image_url
+    
+    def get_image_secure_url(self, obj):
+        return obj.image_secure_url
     
 class CommentSerializer(serializers.ModelSerializer):
 

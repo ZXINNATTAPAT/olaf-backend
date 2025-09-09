@@ -1,5 +1,6 @@
 from django.db import models
 from authentication.models import Account
+from cloudinary.models import CloudinaryField
 
 class Post(models.Model):
     post_id = models.AutoField(primary_key=True)
@@ -8,7 +9,7 @@ class Post(models.Model):
     post_text = models.TextField()
     post_datetime = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='posts')
-    image = models.ImageField(upload_to='posts/images/', blank=True, null=True)
+    image = CloudinaryField('image', folder='posts/images/', blank=True, null=True)
 
     def __str__(self):
         return self.header if self.header else 'Untitled Post'
@@ -16,6 +17,27 @@ class Post(models.Model):
     @property
     def like_count(self):
         return self.likes.count()
+    
+    @property
+    def image_url(self):
+        """Return the URL of the image from Cloudinary"""
+        if self.image:
+            return self.image.url
+        return None
+    
+    @property
+    def image_public_id(self):
+        """Return the public ID of the image in Cloudinary"""
+        if self.image:
+            return self.image.public_id
+        return None
+    
+    @property
+    def image_secure_url(self):
+        """Return the secure URL of the image from Cloudinary"""
+        if self.image:
+            return self.image.build_url(secure=True)
+        return None
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
