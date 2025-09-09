@@ -171,16 +171,16 @@ CORS_ALLOWED_ORIGINS = [
     "https://olafs.netlify.app"
 ]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False  # Set to False for development
 CSRF_COOKIE_HTTP_ONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://olafs.netlify.app"
 ]
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = False  # Set to False for development
+CSRF_COOKIE_SAMESITE = "Lax"  # Changed to Lax
+SESSION_COOKIE_SAMESITE = "Lax"  # Changed to Lax
 
 
 SIMPLE_JWT = {
@@ -221,12 +221,12 @@ SIMPLE_JWT = {
     # A string like "example.com", or None for standard domain cookie.
     'AUTH_COOKIE_DOMAIN': None,
     # Whether the auth cookies should be secure (https:// only).
-    'AUTH_COOKIE_SECURE': True, 
+    'AUTH_COOKIE_SECURE': False,  # Set to False for development (localhost)
     # Http only cookie flag.It's not fetch by javascript.
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
     # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
-    'AUTH_COOKIE_SAMESITE': "None", # TODO: Modify to Lax
+    'AUTH_COOKIE_SAMESITE': "Lax",  # Changed to Lax for better compatibility
 }
 
 
