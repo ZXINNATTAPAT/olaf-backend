@@ -16,14 +16,18 @@ class CloudDiarySerializer(serializers.ModelSerializer):
     author = AccountSerializer(read_only=True)
     images = CloudDiaryImageSerializer(many=True, read_only=True)
     author_id = serializers.IntegerField(write_only=True)
+    image_count = serializers.SerializerMethodField()
     
     class Meta:
         model = CloudDiary
         fields = [
             'id', 'title', 'content', 'author', 'author_id', 
-            'created_at', 'updated_at', 'is_public', 'images'
+            'created_at', 'updated_at', 'is_public', 'images', 'image_count'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_image_count(self, obj):
+        return obj.images.count()
     
     def create(self, validated_data):
         # Remove author_id from validated_data as it's handled by the view

@@ -39,7 +39,7 @@ SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['olaf-backend.onrender.com','127.0.0.1']
+ALLOWED_HOSTS = ['olaf-backend.onrender.com','127.0.0.1','localhost']
 
 
 # Application definition
@@ -175,12 +175,26 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTP_ONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
-    "https://olafs.netlify.app"
+    "https://olafs.netlify.app",
+    "https://olaf-backend.onrender.com"
 ]
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SAMESITE = "None"
+
+# Additional CORS settings for better cookie handling
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 
 SIMPLE_JWT = {

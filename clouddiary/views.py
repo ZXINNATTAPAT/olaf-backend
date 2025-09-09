@@ -28,6 +28,11 @@ class CloudDiaryListCreateView(generics.ListCreateAPIView):
             return CloudDiaryCreateSerializer
         return CloudDiarySerializer
     
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
@@ -46,6 +51,11 @@ class CloudDiaryDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ['PUT', 'PATCH']:
             return CloudDiaryUpdateSerializer
         return CloudDiarySerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 class UserCloudDiaryListView(generics.ListAPIView):
     serializer_class = CloudDiarySerializer
@@ -56,6 +66,11 @@ class UserCloudDiaryListView(generics.ListAPIView):
         return CloudDiary.objects.filter(
             author=self.request.user
         ).select_related('author').prefetch_related('images')
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

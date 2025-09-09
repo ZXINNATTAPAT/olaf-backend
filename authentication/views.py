@@ -28,13 +28,20 @@ def loginView(request):
     if user is not None:
         tokens = get_user_tokens(user)
         res = response.Response()
+        
+        # Set domain for cookies based on environment
+        cookie_domain = None
+        if not settings.DEBUG:
+            cookie_domain = '.onrender.com'  # Use wildcard domain for Render
+        
         res.set_cookie(
             key=settings.SIMPLE_JWT['AUTH_COOKIE'],
             value=tokens["access_token"],
             expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
             secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
             httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+            domain=cookie_domain
         )
 
         res.set_cookie(
@@ -43,7 +50,8 @@ def loginView(request):
             expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
             secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
             httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+            domain=cookie_domain
         )
 
         res.data = tokens
@@ -135,12 +143,27 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
 @rest_decorators.permission_classes([rest_permissions.IsAuthenticated])
 def user(request):
     try:
+        # Check if user is authenticated
+        if not request.user or not request.user.is_authenticated:
+            return response.Response(
+                {"error": "Authentication required"}, 
+                status=401
+            )
+        
         user = models.Account.objects.get(id=request.user.id)
+        serializer = serializers.AccountSerializer(user)
+        return response.Response(serializer.data)
+        
     except models.Account.DoesNotExist:
-        return response.Response(status_code=404)
-
-    serializer = serializers.AccountSerializer(user)
-    return response.Response(serializer.data)
+        return response.Response(
+            {"error": "User not found"}, 
+            status=404
+        )
+    except Exception as e:
+        return response.Response(
+            {"error": "Internal server error"}, 
+            status=500
+        )
 
 
 @rest_decorators.api_view(["GET"])
