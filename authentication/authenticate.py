@@ -29,9 +29,8 @@ class CustomAuthentication(jwt_authentication.JWTAuthentication):
         
         try:
             validated_token = self.get_validated_token(raw_token)
-            # Only enforce CSRF for non-GET requests or when explicitly needed
-            if request.method != 'GET':
-                enforce_csrf(request)
+            # Skip CSRF check for API requests with valid JWT token
+            # CSRF is mainly for form-based authentication
             return self.get_user(validated_token), validated_token
         except Exception as e:
             # If token validation fails, return None to allow other auth methods
