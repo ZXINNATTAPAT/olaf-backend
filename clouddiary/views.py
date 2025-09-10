@@ -1,5 +1,5 @@
 from rest_framework import generics, status, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
@@ -11,10 +11,12 @@ from .serializers import (
     CloudDiaryUpdateSerializer,
     CloudDiaryImageSerializer
 )
+from authentication.authenticate import CustomAuthentication
 
 class CloudDiaryListCreateView(generics.ListCreateAPIView):
     serializer_class = CloudDiarySerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CustomAuthentication]
     parser_classes = [MultiPartParser, FormParser]
     
     def get_queryset(self):
@@ -39,6 +41,7 @@ class CloudDiaryListCreateView(generics.ListCreateAPIView):
 class CloudDiaryDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CloudDiarySerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CustomAuthentication]
     parser_classes = [MultiPartParser, FormParser]
     
     def get_queryset(self):
@@ -60,6 +63,7 @@ class CloudDiaryDetailView(generics.RetrieveUpdateDestroyAPIView):
 class UserCloudDiaryListView(generics.ListAPIView):
     serializer_class = CloudDiarySerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CustomAuthentication]
     
     def get_queryset(self):
         # Return only user's own diaries
@@ -73,6 +77,7 @@ class UserCloudDiaryListView(generics.ListAPIView):
         return context
 
 @api_view(['POST'])
+@authentication_classes([CustomAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def add_image_to_clouddiary(request, clouddiary_id):
     """Add an image to an existing clouddiary"""
@@ -85,6 +90,7 @@ def add_image_to_clouddiary(request, clouddiary_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
+@authentication_classes([CustomAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def delete_clouddiary_image(request, image_id):
     """Delete an image from clouddiary"""
@@ -93,6 +99,7 @@ def delete_clouddiary_image(request, image_id):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
+@authentication_classes([CustomAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def get_clouddiary_images(request, clouddiary_id):
     """Get all images for a specific clouddiary"""
