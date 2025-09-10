@@ -7,5 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('blog.urls')),  
     path('api/auth/',include('authentication.urls' ,namespace='authentication')),
-    path('api/clouddiary/', include('clouddiary.urls', namespace='clouddiary'))
+    path('api/clouddiary/', include('clouddiary.urls', namespace='clouddiary')),
+    path('api/shared-images/', include('shared_images.urls', namespace='shared_images'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

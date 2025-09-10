@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 from .models import CloudDiary, CloudDiaryImage
 from .serializers import (
     CloudDiarySerializer, 
@@ -11,6 +12,7 @@ from .serializers import (
     CloudDiaryUpdateSerializer,
     CloudDiaryImageSerializer
 )
+from shared_images.views import upload_image_to_object, get_object_images, get_primary_image, set_primary_image, delete_image
 from authentication.authenticate import CustomAuthentication
 
 class CloudDiaryListCreateView(generics.ListCreateAPIView):
@@ -23,7 +25,7 @@ class CloudDiaryListCreateView(generics.ListCreateAPIView):
         # Return public diaries or user's own diaries
         return CloudDiary.objects.filter(
             models.Q(is_public=True) | models.Q(author=self.request.user)
-        ).select_related('author').prefetch_related('images')
+        ).select_related('author').prefetch_related('images', 'shared_images')
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -48,7 +50,7 @@ class CloudDiaryDetailView(generics.RetrieveUpdateDestroyAPIView):
         # Return public diaries or user's own diaries
         return CloudDiary.objects.filter(
             models.Q(is_public=True) | models.Q(author=self.request.user)
-        ).select_related('author').prefetch_related('images')
+        ).select_related('author').prefetch_related('images', 'shared_images')
     
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
@@ -69,7 +71,7 @@ class UserCloudDiaryListView(generics.ListAPIView):
         # Return only user's own diaries
         return CloudDiary.objects.filter(
             author=self.request.user
-        ).select_related('author').prefetch_related('images')
+        ).select_related('author').prefetch_related('images', 'shared_images')
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -115,3 +117,61 @@ def get_clouddiary_images(request, clouddiary_id):
     images = clouddiary.images.all()
     serializer = CloudDiaryImageSerializer(images, many=True)
     return Response(serializer.data)
+
+# Shared image management endpoints for clouddiary
+@api_view(['POST'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def upload_clouddiary_image(request, clouddiary_id):
+    """Upload an image to a specific clouddiary"""
+    clouddiary = get_object_or_404(CloudDiary, pk=clouddiary_id, author=request.user)
+    content_type = ContentType.objects.get_for_model(CloudDiary)
+    return upload_image_to_object(request, content_type.id, clouddiary_id)
+
+@api_view(['GET'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def get_clouddiary_shared_images(request, clouddiary_id):
+    """Get all shared images for a specific clouddiary"""
+    clouddiary = get_object_or_404(CloudDiary, pk=clouddiary_id)
+    
+    # Check if user can access this clouddiary
+    if not clouddiary.is_public and clouddiary.author != request.user:
+        return Response(
+            {"error": "You don't have permission to view this clouddiary"}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    content_type = ContentType.objects.get_for_model(CloudDiary)
+    return get_object_images(request, content_type.id, clouddiary_id)
+
+@api_view(['GET'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def get_clouddiary_primary_shared_image(request, clouddiary_id):
+    """Get the primary shared image for a specific clouddiary"""
+    clouddiary = get_object_or_404(CloudDiary, pk=clouddiary_id)
+    
+    # Check if user can access this clouddiary
+    if not clouddiary.is_public and clouddiary.author != request.user:
+        return Response(
+            {"error": "You don't have permission to view this clouddiary"}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    content_type = ContentType.objects.get_for_model(CloudDiary)
+    return get_primary_image(request, content_type.id, clouddiary_id)
+
+@api_view(['PATCH'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def set_clouddiary_primary_image(request, image_id):
+    """Set an image as primary for its clouddiary"""
+    return set_primary_image(request, image_id)
+
+@api_view(['DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def delete_clouddiary_shared_image(request, image_id):
+    """Delete a shared image from a clouddiary"""
+    return delete_image(request, image_id)
