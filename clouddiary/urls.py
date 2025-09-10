@@ -16,6 +16,7 @@ urlpatterns = [
     
     # New shared image operations
     path('<int:clouddiary_id>/upload-shared-image/', views.upload_clouddiary_image, name='upload-clouddiary-shared-image'),
+    path('<int:clouddiary_id>/add-image-path/', views.add_clouddiary_image_path, name='add-clouddiary-image-path'),
     path('<int:clouddiary_id>/shared-images/', views.get_clouddiary_shared_images, name='get-clouddiary-shared-images'),
     path('<int:clouddiary_id>/primary-shared-image/', views.get_clouddiary_primary_shared_image, name='get-clouddiary-primary-shared-image'),
     path('shared-images/<int:image_id>/set-primary/', views.set_clouddiary_primary_image, name='set-clouddiary-primary-image'),

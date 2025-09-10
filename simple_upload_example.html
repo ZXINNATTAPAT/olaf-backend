@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Example</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .upload-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input[type="file"] { margin: 10px 0; }
+        input[type="text"], input[type="number"] { margin: 5px; padding: 8px; width: 200px; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>Image Upload Example</h1>
+    
+    <div class="upload-section">
+        <h2>Upload to Blog Post</h2>
+        <form id="blogUploadForm">
+            <div>
+                <label>Select Image:</label><br>
+                <input type="file" id="blogImageFile" accept="image/*" multiple>
+            </div>
+            <div>
+                <label>Caption:</label><br>
+                <input type="text" id="blogCaption" placeholder="Image caption">
+            </div>
+            <div>
+                <input type="checkbox" id="blogIsPrimary"> Set as primary image
+            </div>
+            <div>
+                <label>Sort Order:</label><br>
+                <input type="number" id="blogSortOrder" value="0" min="0">
+            </div>
+            <button type="button" onclick="uploadBlogImage()">Upload to Post</button>
+        </form>
+        <div id="blogResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="upload-section">
+        <h2>Upload to CloudDiary</h2>
+        <form id="diaryUploadForm">
+            <div>
+                <label>Select Image:</label><br>
+                <input type="file" id="diaryImageFile" accept="image/*" multiple>
+            </div>
+            <div>
+                <label>Caption:</label><br>
+                <input type="text" id="diaryCaption" placeholder="Diary image caption">
+            </div>
+            <div>
+                <input type="checkbox" id="diaryIsPrimary"> Set as primary image
+            </div>
+            <div>
+                <label>Sort Order:</label><br>
+                <input type="number" id="diarySortOrder" value="0" min="0">
+            </div>
+            <button type="button" onclick="uploadDiaryImage()">Upload to Diary</button>
+        </form>
+        <div id="diaryResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="upload-section">
+        <h2>Configuration</h2>
+        <div>
+            <label>Cloudinary Cloud Name:</label><br>
+            <input type="text" id="cloudName" placeholder="your-cloud-name" value="your-cloud-name">
+        </div>
+        <div>
+            <label>Upload Preset:</label><br>
+            <input type="text" id="uploadPreset" placeholder="your-upload-preset" value="your-upload-preset">
+        </div>
+        <div>
+            <label>API Base URL:</label><br>
+            <input type="text" id="apiBaseUrl" placeholder="https://olaf-backend.onrender.com" value="https://olaf-backend.onrender.com">
+        </div>
+        <div>
+            <label>JWT Token:</label><br>
+            <input type="text" id="jwtToken" placeholder="your-jwt-token" style="width: 400px;">
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let cloudName = 'your-cloud-name';
+        let uploadPreset = 'your-upload-preset';
+        let apiBaseUrl = 'https://olaf-backend.onrender.com';
+        let jwtToken = '';
+
+        // Update configuration from inputs
+        function updateConfig() {
+            cloudName = document.getElementById('cloudName').value;
+            uploadPreset = document.getElementById('uploadPreset').value;
+            apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            jwtToken = document.getElementById('jwtToken').value;
+        }
+
+        // Upload to Cloudinary
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('folder', 'shared/images');
+            
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Cloudinary upload failed: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        }
+
+        // Save image path to backend
+        async function saveImagePath(endpoint, imageData, options) {
+            const payload = {
+                image: imageData.secure_url,
+                caption: options.caption || '',
+                is_primary: options.isPrimary || false,
+                sort_order: options.sortOrder || 0
+            };
+
+            const response = await fetch(`${apiBaseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${jwtToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Backend save failed: ${response.statusText}`);
+            }
+
+            return await response.json();
+        }
+
+        // Upload to blog post
+        async function uploadBlogImage() {
+            updateConfig();
+            
+            const fileInput = document.getElementById('blogImageFile');
+            const file = fileInput.files[0];
+            const caption = document.getElementById('blogCaption').value;
+            const isPrimary = document.getElementById('blogIsPrimary').checked;
+            const sortOrder = parseInt(document.getElementById('blogSortOrder').value);
+            
+            const resultDiv = document.getElementById('blogResult');
+            
+            if (!file) {
+                showResult(resultDiv, 'Please select a file', 'error');
+                return;
+            }
+
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Uploading to Cloudinary...', '');
+                
+                // Step 1: Upload to Cloudinary
+                const cloudinaryResult = await uploadToCloudinary(file);
+                
+                showResult(resultDiv, 'Saving to backend...', '');
+                
+                // Step 2: Save to backend
+                const backendResult = await saveImagePath('/api/posts/4/add-image-path/', cloudinaryResult, {
+                    caption,
+                    isPrimary,
+                    sortOrder
+                });
+                
+                showResult(resultDiv, `Upload successful!<br>
+                    Cloudinary URL: ${cloudinaryResult.secure_url}<br>
+                    Backend ID: ${backendResult.id}`, 'success');
+                    
+            } catch (error) {
+                showResult(resultDiv, `Upload failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Upload to CloudDiary
+        async function uploadDiaryImage() {
+            updateConfig();
+            
+            const fileInput = document.getElementById('diaryImageFile');
+            const file = fileInput.files[0];
+            const caption = document.getElementById('diaryCaption').value;
+            const isPrimary = document.getElementById('diaryIsPrimary').checked;
+            const sortOrder = parseInt(document.getElementById('diarySortOrder').value);
+            
+            const resultDiv = document.getElementById('diaryResult');
+            
+            if (!file) {
+                showResult(resultDiv, 'Please select a file', 'error');
+                return;
+            }
+
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Uploading to Cloudinary...', '');
+                
+                // Step 1: Upload to Cloudinary
+                const cloudinaryResult = await uploadToCloudinary(file);
+                
+                showResult(resultDiv, 'Saving to backend...', '');
+                
+                // Step 2: Save to backend
+                const backendResult = await saveImagePath('/api/clouddiary/1/add-image-path/', cloudinaryResult, {
+                    caption,
+                    isPrimary,
+                    sortOrder
+                });
+                
+                showResult(resultDiv, `Upload successful!<br>
+                    Cloudinary URL: ${cloudinaryResult.secure_url}<br>
+                    Backend ID: ${backendResult.id}`, 'success');
+                    
+            } catch (error) {
+                showResult(resultDiv, `Upload failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Show result
+        function showResult(element, message, type) {
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Load configuration from localStorage
+        window.onload = function() {
+            const savedConfig = localStorage.getItem('imageUploadConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('cloudName').value = config.cloudName || 'your-cloud-name';
+                document.getElementById('uploadPreset').value = config.uploadPreset || 'your-upload-preset';
+                document.getElementById('apiBaseUrl').value = config.apiBaseUrl || 'https://olaf-backend.onrender.com';
+                document.getElementById('jwtToken').value = config.jwtToken || '';
+            }
+        };
+
+        // Save configuration to localStorage
+        function saveConfig() {
+            const config = {
+                cloudName: document.getElementById('cloudName').value,
+                uploadPreset: document.getElementById('uploadPreset').value,
+                apiBaseUrl: document.getElementById('apiBaseUrl').value,
+                jwtToken: document.getElementById('jwtToken').value
+            };
+            localStorage.setItem('imageUploadConfig', JSON.stringify(config));
+            alert('Configuration saved!');
+        }
+
+        // Add save button
+        document.addEventListener('DOMContentLoaded', function() {
+            const configSection = document.querySelector('.upload-section:last-child');
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save Configuration';
+            saveButton.onclick = saveConfig;
+            configSection.appendChild(saveButton);
+        });
+    </script>
+</body>
+</html>

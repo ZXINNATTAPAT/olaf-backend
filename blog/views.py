@@ -165,3 +165,15 @@ def set_post_primary_image(request, image_id):
 def delete_post_image(request, image_id):
     """Delete an image from a post"""
     return delete_image(request, image_id)
+
+@api_view(['POST'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def add_post_image_path(request, post_id):
+    """Add an image path to a post (for frontend-uploaded images)"""
+    post = get_object_or_404(Post, pk=post_id)
+    content_type = ContentType.objects.get_for_model(Post)
+    
+    # Use the shared images add_image_path_to_object function
+    from shared_images.views import add_image_path_to_object
+    return add_image_path_to_object(request, content_type.id, post_id)

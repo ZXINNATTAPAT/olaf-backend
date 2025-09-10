@@ -25,6 +25,17 @@ class SharedImageCreateSerializer(serializers.ModelSerializer):
         # The content_object will be set in the view
         return super().create(validated_data)
 
+class SharedImagePathSerializer(serializers.ModelSerializer):
+    """Serializer for adding image paths (when frontend uploads to Cloudinary directly)"""
+    
+    class Meta:
+        model = SharedImage
+        fields = ['image', 'caption', 'is_primary', 'sort_order']
+    
+    def create(self, validated_data):
+        # The content_object will be set in the view
+        return super().create(validated_data)
+
 class SharedImageUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating image metadata"""
     
