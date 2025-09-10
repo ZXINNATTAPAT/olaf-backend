@@ -182,8 +182,12 @@ def delete_clouddiary_shared_image(request, image_id):
 def add_clouddiary_image_path(request, clouddiary_id):
     """Add an image path to a clouddiary (for frontend-uploaded images)"""
     clouddiary = get_object_or_404(CloudDiary, pk=clouddiary_id, author=request.user)
-    content_type = ContentType.objects.get_for_model(CloudDiary)
     
-    # Use the shared images add_image_path_to_object function
-    from shared_images.views import add_image_path_to_object
-    return add_image_path_to_object(request, content_type.id, clouddiary_id)
+    # Handle JSON request directly
+    from shared_images.serializers import SharedImagePathSerializer
+    
+    serializer = SharedImagePathSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(content_object=clouddiary)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

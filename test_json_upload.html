@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input, textarea { margin: 5px; padding: 8px; width: 300px; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; white-space: pre-wrap; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>JSON Upload Test</h1>
+    
+    <div class="section">
+        <h2>Configuration</h2>
+        <div>
+            <label>API Base URL:</label><br>
+            <input type="text" id="apiBaseUrl" value="https://olaf-backend.onrender.com">
+        </div>
+        <div>
+            <label>JWT Token:</label><br>
+            <input type="text" id="jwtToken" placeholder="your-jwt-token" style="width: 500px;">
+        </div>
+        <div>
+            <label>Post ID:</label><br>
+            <input type="number" id="postId" value="4">
+        </div>
+        <div>
+            <label>CloudDiary ID:</label><br>
+            <input type="number" id="cloudDiaryId" value="1">
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Test Add Image Path to Blog Post</h2>
+        <div>
+            <label>Image URL (from Cloudinary):</label><br>
+            <input type="text" id="postImageUrl" placeholder="https://res.cloudinary.com/..." style="width: 500px;">
+        </div>
+        <div>
+            <label>Caption:</label><br>
+            <input type="text" id="postCaption" placeholder="Image caption">
+        </div>
+        <div>
+            <input type="checkbox" id="postIsPrimary"> Set as primary image
+        </div>
+        <div>
+            <label>Sort Order:</label><br>
+            <input type="number" id="postSortOrder" value="0" min="0">
+        </div>
+        <button onclick="testAddPostImage()">Add Image to Post</button>
+        <div id="postResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test Add Image Path to CloudDiary</h2>
+        <div>
+            <label>Image URL (from Cloudinary):</label><br>
+            <input type="text" id="diaryImageUrl" placeholder="https://res.cloudinary.com/..." style="width: 500px;">
+        </div>
+        <div>
+            <label>Caption:</label><br>
+            <input type="text" id="diaryCaption" placeholder="Diary image caption">
+        </div>
+        <div>
+            <input type="checkbox" id="diaryIsPrimary"> Set as primary image
+        </div>
+        <div>
+            <label>Sort Order:</label><br>
+            <input type="number" id="diarySortOrder" value="0" min="0">
+        </div>
+        <button onclick="testAddDiaryImage()">Add Image to CloudDiary</button>
+        <div id="diaryResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test Get Images</h2>
+        <button onclick="testGetPostImages()">Get Post Images</button>
+        <button onclick="testGetDiaryImages()">Get CloudDiary Images</button>
+        <div id="getResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Test add image to post
+        async function testAddPostImage() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const jwtToken = document.getElementById('jwtToken').value;
+            const postId = document.getElementById('postId').value;
+            const imageUrl = document.getElementById('postImageUrl').value;
+            const caption = document.getElementById('postCaption').value;
+            const isPrimary = document.getElementById('postIsPrimary').checked;
+            const sortOrder = parseInt(document.getElementById('postSortOrder').value);
+            
+            const resultDiv = document.getElementById('postResult');
+            
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+            
+            if (!imageUrl) {
+                showResult(resultDiv, 'Please enter image URL', 'error');
+                return;
+            }
+
+            const payload = {
+                image: imageUrl,
+                caption: caption,
+                is_primary: isPrimary,
+                sort_order: sortOrder
+            };
+
+            try {
+                showResult(resultDiv, 'Sending request...', '');
+                
+                const response = await fetch(`${apiBaseUrl}/api/posts/${postId}/add-image-path/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultDiv, `Success!\n\nResponse:\n${JSON.stringify(result, null, 2)}`, 'success');
+                } else {
+                    showResult(resultDiv, `Error ${response.status}:\n${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, `Request failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test add image to CloudDiary
+        async function testAddDiaryImage() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const jwtToken = document.getElementById('jwtToken').value;
+            const cloudDiaryId = document.getElementById('cloudDiaryId').value;
+            const imageUrl = document.getElementById('diaryImageUrl').value;
+            const caption = document.getElementById('diaryCaption').value;
+            const isPrimary = document.getElementById('diaryIsPrimary').checked;
+            const sortOrder = parseInt(document.getElementById('diarySortOrder').value);
+            
+            const resultDiv = document.getElementById('diaryResult');
+            
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+            
+            if (!imageUrl) {
+                showResult(resultDiv, 'Please enter image URL', 'error');
+                return;
+            }
+
+            const payload = {
+                image: imageUrl,
+                caption: caption,
+                is_primary: isPrimary,
+                sort_order: sortOrder
+            };
+
+            try {
+                showResult(resultDiv, 'Sending request...', '');
+                
+                const response = await fetch(`${apiBaseUrl}/api/clouddiary/${cloudDiaryId}/add-image-path/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultDiv, `Success!\n\nResponse:\n${JSON.stringify(result, null, 2)}`, 'success');
+                } else {
+                    showResult(resultDiv, `Error ${response.status}:\n${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, `Request failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test get post images
+        async function testGetPostImages() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const jwtToken = document.getElementById('jwtToken').value;
+            const postId = document.getElementById('postId').value;
+            
+            const resultDiv = document.getElementById('getResult');
+            
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Getting post images...', '');
+                
+                const response = await fetch(`${apiBaseUrl}/api/posts/${postId}/images/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultDiv, `Post Images:\n${JSON.stringify(result, null, 2)}`, 'success');
+                } else {
+                    showResult(resultDiv, `Error ${response.status}:\n${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, `Request failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test get CloudDiary images
+        async function testGetDiaryImages() {
+            const apiBaseUrl = document.getElementById('apiBaseUrl').value;
+            const jwtToken = document.getElementById('jwtToken').value;
+            const cloudDiaryId = document.getElementById('cloudDiaryId').value;
+            
+            const resultDiv = document.getElementById('getResult');
+            
+            if (!jwtToken) {
+                showResult(resultDiv, 'Please enter JWT token', 'error');
+                return;
+            }
+
+            try {
+                showResult(resultDiv, 'Getting CloudDiary images...', '');
+                
+                const response = await fetch(`${apiBaseUrl}/api/clouddiary/${cloudDiaryId}/shared-images/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(resultDiv, `CloudDiary Images:\n${JSON.stringify(result, null, 2)}`, 'success');
+                } else {
+                    showResult(resultDiv, `Error ${response.status}:\n${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(resultDiv, `Request failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Show result
+        function showResult(element, message, type) {
+            element.innerHTML = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Load saved configuration
+        window.onload = function() {
+            const savedConfig = localStorage.getItem('jsonUploadConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('apiBaseUrl').value = config.apiBaseUrl || 'https://olaf-backend.onrender.com';
+                document.getElementById('jwtToken').value = config.jwtToken || '';
+                document.getElementById('postId').value = config.postId || '4';
+                document.getElementById('cloudDiaryId').value = config.cloudDiaryId || '1';
+            }
+        };
+
+        // Save configuration
+        function saveConfig() {
+            const config = {
+                apiBaseUrl: document.getElementById('apiBaseUrl').value,
+                jwtToken: document.getElementById('jwtToken').value,
+                postId: document.getElementById('postId').value,
+                cloudDiaryId: document.getElementById('cloudDiaryId').value
+            };
+            localStorage.setItem('jsonUploadConfig', JSON.stringify(config));
+            alert('Configuration saved!');
+        }
+
+        // Add save button
+        document.addEventListener('DOMContentLoaded', function() {
+            const configSection = document.querySelector('.section:first-child');
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save Configuration';
+            saveButton.onclick = saveConfig;
+            configSection.appendChild(saveButton);
+        });
+    </script>
+</body>
+</html>

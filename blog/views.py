@@ -174,6 +174,11 @@ def add_post_image_path(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     content_type = ContentType.objects.get_for_model(Post)
     
-    # Use the shared images add_image_path_to_object function
-    from shared_images.views import add_image_path_to_object
-    return add_image_path_to_object(request, content_type.id, post_id)
+    # Handle JSON request directly
+    from shared_images.serializers import SharedImagePathSerializer
+    
+    serializer = SharedImagePathSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(content_object=post)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
