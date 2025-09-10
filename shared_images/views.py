@@ -98,6 +98,7 @@ def add_image_path_to_object(request, content_type_id, object_id):
             status=status.HTTP_404_NOT_FOUND
         )
     
+    # Handle JSON data for image path
     serializer = SharedImagePathSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(content_object=obj)
