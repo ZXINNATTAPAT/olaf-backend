@@ -177,3 +177,47 @@ def add_post_image_path(request, post_id):
     # Use the shared images add_image_path_to_object function
     from shared_images.views import add_image_path_to_object
     return add_image_path_to_object(request, content_type.id, post_id)
+
+@api_view(['POST'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def create_post_with_image(request):
+    """Create a new post with image data from frontend"""
+    from .serializers import PostSerializer
+    from shared_images.serializers import SharedImagePathSerializer
+    
+    # Create the post first
+    post_data = {
+        'header': request.data.get('header'),
+        'short': request.data.get('short'),
+        'post_text': request.data.get('post_text'),
+        'user_id': request.data.get('user_id')
+    }
+    
+    post_serializer = PostSerializer(data=post_data)
+    if not post_serializer.is_valid():
+        return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    post = post_serializer.save()
+    
+    # Add image if provided
+    if request.data.get('image_url'):
+        image_data = {
+            'image': request.data.get('image_url'),
+            'caption': request.data.get('caption', ''),
+            'is_primary': request.data.get('is_primary', True),
+            'sort_order': request.data.get('sort_order', 0)
+        }
+        
+        image_serializer = SharedImagePathSerializer(data=image_data)
+        if image_serializer.is_valid():
+            image_serializer.save(content_object=post)
+        else:
+            # If image fails, still return the post but with error info
+            return Response({
+                'post': PostSerializer(post).data,
+                'image_error': image_serializer.errors
+            }, status=status.HTTP_201_CREATED)
+    
+    # Return the complete post with images
+    return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)

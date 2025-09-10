@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import (
     UserViewSet, PostViewSet, CommentViewSet, PostLikeViewSet, CommentLikeViewSet,
     upload_post_image, get_post_images, get_post_primary_image, 
-    set_post_primary_image, delete_post_image, add_post_image_path
+    set_post_primary_image, delete_post_image, add_post_image_path, create_post_with_image
 )
 
 router = routers.DefaultRouter()
@@ -17,6 +17,9 @@ urlpatterns = [
     path('', include(router.urls)),
     path('postlikes/<int:post_id>/<int:user_id>/', PostLikeViewSet.as_view({'delete': 'destroy'}), name='postlike'),
     path('commentlikes/<int:comment_id>/<int:user_id>/', CommentLikeViewSet.as_view({'delete': 'destroy'}), name='commentlike'),
+    
+    # Post creation with image
+    path('posts/create-with-image/', create_post_with_image, name='create-post-with-image'),
     
     # Image management endpoints
     path('posts/<int:post_id>/upload-image/', upload_post_image, name='upload-post-image'),
