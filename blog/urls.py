@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import (
     UserViewSet, PostViewSet, CommentViewSet, PostLikeViewSet, CommentLikeViewSet,
     upload_post_image, get_post_images, get_post_primary_image, 
-    set_post_primary_image, delete_post_image
+    set_post_primary_image, delete_post_image, add_post_image_path
 )
 
 router = routers.DefaultRouter()
@@ -20,6 +20,7 @@ urlpatterns = [
     
     # Image management endpoints
     path('posts/<int:post_id>/upload-image/', upload_post_image, name='upload-post-image'),
+    path('posts/<int:post_id>/add-image-path/', add_post_image_path, name='add-post-image-path'),
     path('posts/<int:post_id>/images/', get_post_images, name='get-post-images'),
     path('posts/<int:post_id>/primary-image/', get_post_primary_image, name='get-post-primary-image'),
     path('images/<int:image_id>/set-primary/', set_post_primary_image, name='set-post-primary-image'),

@@ -8,7 +8,8 @@ from .models import SharedImage
 from .serializers import (
     SharedImageSerializer, 
     SharedImageCreateSerializer, 
-    SharedImageUpdateSerializer
+    SharedImageUpdateSerializer,
+    SharedImagePathSerializer
 )
 from authentication.authenticate import CustomAuthentication
 
@@ -78,6 +79,26 @@ def upload_image_to_object(request, content_type_id, object_id):
         )
     
     serializer = SharedImageCreateSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(content_object=obj)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def add_image_path_to_object(request, content_type_id, object_id):
+    """Add an image path to a specific object (for frontend-uploaded images)"""
+    try:
+        content_type = ContentType.objects.get_for_id(content_type_id)
+        obj = content_type.get_object_for_this_type(pk=object_id)
+    except (ContentType.DoesNotExist, Exception):
+        return Response(
+            {"error": "Object not found"}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    serializer = SharedImagePathSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(content_object=obj)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
