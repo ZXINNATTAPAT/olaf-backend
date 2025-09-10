@@ -1,9 +1,15 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework import permissions
+from django.shortcuts import get_object_or_404
+from django.contrib.contenttypes.models import ContentType
 from .models import  Post, Comment, PostLike, CommentLike
 from authentication.models import Account
 from .serializers import UserSerializer, PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
+from shared_images.views import upload_image_to_object, get_object_images, get_primary_image, set_primary_image, delete_image
+from authentication.authenticate import CustomAuthentication
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -11,7 +17,9 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.select_related('user').prefetch_related('comments__user', 'likes__user').all()
+    queryset = Post.objects.select_related('user').prefetch_related(
+        'comments__user', 'likes__user', 'images'
+    ).all()
     serializer_class = PostSerializer
     parser_classes = [MultiPartParser, FormParser]
 
@@ -115,3 +123,45 @@ class CommentLikeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except CommentLike.DoesNotExist:
             return Response({'detail': 'Like not found'}, status=status.HTTP_404_NOT_FOUND)
+
+# Image management endpoints for posts
+@api_view(['POST'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def upload_post_image(request, post_id):
+    """Upload an image to a specific post"""
+    post = get_object_or_404(Post, pk=post_id)
+    content_type = ContentType.objects.get_for_model(Post)
+    return upload_image_to_object(request, content_type.id, post_id)
+
+@api_view(['GET'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def get_post_images(request, post_id):
+    """Get all images for a specific post"""
+    post = get_object_or_404(Post, pk=post_id)
+    content_type = ContentType.objects.get_for_model(Post)
+    return get_object_images(request, content_type.id, post_id)
+
+@api_view(['GET'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def get_post_primary_image(request, post_id):
+    """Get the primary image for a specific post"""
+    post = get_object_or_404(Post, pk=post_id)
+    content_type = ContentType.objects.get_for_model(Post)
+    return get_primary_image(request, content_type.id, post_id)
+
+@api_view(['PATCH'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def set_post_primary_image(request, image_id):
+    """Set an image as primary for its post"""
+    return set_primary_image(request, image_id)
+
+@api_view(['DELETE'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def delete_post_image(request, image_id):
+    """Delete an image from a post"""
+    return delete_image(request, image_id)

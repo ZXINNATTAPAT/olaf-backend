@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import CloudDiary, CloudDiaryImage
 from authentication.serializers import AccountSerializer
+from shared_images.serializers import SharedImageSerializer
 
 class CloudDiaryImageSerializer(serializers.ModelSerializer):
     image_url = serializers.ReadOnlyField()
@@ -14,20 +15,41 @@ class CloudDiaryImageSerializer(serializers.ModelSerializer):
 
 class CloudDiarySerializer(serializers.ModelSerializer):
     author = AccountSerializer(read_only=True)
-    images = CloudDiaryImageSerializer(many=True, read_only=True)
+    images = CloudDiaryImageSerializer(many=True, read_only=True)  # Keep old images for backward compatibility
     author_id = serializers.IntegerField(write_only=True)
     image_count = serializers.SerializerMethodField()
+    # New shared images fields
+    shared_images = SharedImageSerializer(many=True, read_only=True)
+    primary_image = serializers.SerializerMethodField()
+    primary_image_url = serializers.SerializerMethodField()
+    shared_image_count = serializers.SerializerMethodField()
     
     class Meta:
         model = CloudDiary
         fields = [
             'id', 'title', 'content', 'author', 'author_id', 
-            'created_at', 'updated_at', 'is_public', 'images', 'image_count'
+            'created_at', 'updated_at', 'is_public', 'images', 'image_count',
+            'shared_images', 'primary_image', 'primary_image_url', 'shared_image_count'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_image_count(self, obj):
         return obj.images.count()
+    
+    def get_primary_image(self, obj):
+        """Return the primary shared image"""
+        primary = obj.primary_image
+        if primary:
+            return SharedImageSerializer(primary).data
+        return None
+    
+    def get_primary_image_url(self, obj):
+        """Return the URL of the primary shared image"""
+        return obj.primary_image_url
+    
+    def get_shared_image_count(self, obj):
+        """Return the count of shared images"""
+        return obj.image_count
     
     def create(self, validated_data):
         # Remove author_id from validated_data as it's handled by the view

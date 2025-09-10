@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericRelation
 from django.utils import timezone
 from cloudinary.models import CloudinaryField
 
@@ -12,6 +13,7 @@ class CloudDiary(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
+    images = GenericRelation('shared_images.SharedImage', related_query_name='clouddiary')  # New shared images
     
     class Meta:
         ordering = ['-created_at']
@@ -20,6 +22,29 @@ class CloudDiary(models.Model):
     
     def __str__(self):
         return f"{self.title} by {self.author.username}"
+    
+    @property
+    def primary_image(self):
+        """Return the primary shared image"""
+        return self.images.filter(is_primary=True).first()
+    
+    @property
+    def primary_image_url(self):
+        """Return the URL of the primary shared image"""
+        primary = self.primary_image
+        if primary:
+            return primary.image_url
+        return None
+    
+    @property
+    def all_images(self):
+        """Return all shared images for this clouddiary"""
+        return self.images.all().order_by('sort_order', 'uploaded_at')
+    
+    @property
+    def image_count(self):
+        """Return the count of shared images"""
+        return self.images.count()
 
 class CloudDiaryImage(models.Model):
     clouddiary = models.ForeignKey(CloudDiary, on_delete=models.CASCADE, related_name='images')
