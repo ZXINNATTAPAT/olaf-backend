@@ -46,9 +46,14 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.comments.count()
     
     def get_image_url(self, obj):
-        return obj.image_url
+        # Use primary image URL from shared images, fallback to old image field
+        return obj.primary_image_url
     
     def get_image_secure_url(self, obj):
+        # Use primary image secure URL from shared images, fallback to old image field
+        primary = obj.primary_image
+        if primary:
+            return primary.image_secure_url
         return obj.image_secure_url
     
     def get_liked(self, obj):
