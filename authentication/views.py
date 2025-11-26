@@ -44,39 +44,36 @@ def loginView(request):
 @rest_decorators.api_view(["POST"])
 @rest_decorators.permission_classes([])
 def registerView(request):
-    try:
-        serializer = serializers.RegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    serializer = serializers.RegistrationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-        user = serializer.save()
+    user = serializer.save()
 
-        if user is not None:
-            # Auto-login after registration
-            tokens = services.get_user_tokens(user)
-            res = response.Response({
-                "message": "User registered successfully!",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "phone": user.phone
-                },
-                **tokens
-            }, status=201)
-            
-            services.set_auth_cookies(
-                res, 
-                access_token=tokens["access_token"], 
-                refresh_token=tokens["refresh_token"]
-            )
-            
-            res["X-CSRFToken"] = csrf.get_token(request)
-            return res
-        return response.Response({"error": "Failed to create user"}, status=400)
-    except Exception as e:
-        return response.Response({"error": str(e)}, status=400)
+    if user is not None:
+        # Auto-login after registration
+        tokens = services.get_user_tokens(user)
+        res = response.Response({
+            "message": "User registered successfully!",
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone": user.phone
+            },
+            **tokens
+        }, status=201)
+        
+        services.set_auth_cookies(
+            res, 
+            access_token=tokens["access_token"], 
+            refresh_token=tokens["refresh_token"]
+        )
+        
+        res["X-CSRFToken"] = csrf.get_token(request)
+        return res
+    return response.Response({"error": "Failed to create user"}, status=400)
 
 
 @rest_decorators.api_view(['POST'])
