@@ -263,6 +263,12 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = "authentication.Account"
 
+# Authentication backends - use custom email backend
+AUTHENTICATION_BACKENDS = [
+    'authentication.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Fallback
+]
+
 # Cloudinary Configuration
 import cloudinary
 import cloudinary.uploader
