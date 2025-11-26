@@ -37,6 +37,8 @@ def loginView(request):
         }
         res["X-CSRFToken"] = csrf.get_token(request)
         return res
+        
+    print(f"Authentication failed for email: {email}")
     raise rest_exceptions.AuthenticationFailed(
         "Email or Password is incorrect!")
 
