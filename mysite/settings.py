@@ -168,25 +168,36 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "https://olafs.netlify.app"
 ]
+
+# Allow credentials for CORS
 CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTP_ONLY = True
+
+# Expose headers for frontend access
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+
+# CSRF Configuration
+CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS only)
+CSRF_COOKIE_HTTP_ONLY = False  # Allow JavaScript to read for API calls
+CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"  # None for cross-origin in production
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://olafs.netlify.app",
     "https://olaf-backend.onrender.com",
     "https://*.railway.app"
 ]
-CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SAMESITE = "None"
+
+# Session Configuration
+SESSION_COOKIE_SECURE = not DEBUG  # True in production
+SESSION_COOKIE_HTTP_ONLY = True
+SESSION_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
 
 # Additional CORS settings for better cookie handling
 CORS_ALLOW_HEADERS = [
@@ -233,19 +244,14 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 
-    # custom
+    # Custom cookie settings for JWT tokens
     'AUTH_COOKIE': 'access',
-    # Cookie name. Enables cookies if value is set.
     'AUTH_COOKIE_REFRESH': 'refresh',
-    # A string like "example.com", or None for standard domain cookie.
-    'AUTH_COOKIE_DOMAIN': None,
-    # Whether the auth cookies should be secure (https:// only).
-    'AUTH_COOKIE_SECURE': not DEBUG, 
-    # Http only cookie flag.It's not fetch by javascript.
-    'AUTH_COOKIE_HTTP_ONLY': True,
-    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
-    # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
-    'AUTH_COOKIE_SAMESITE': 'Lax' if DEBUG else 'None',
+    'AUTH_COOKIE_DOMAIN': os.getenv('COOKIE_DOMAIN', None),  # Set via environment variable for Railway
+    'AUTH_COOKIE_SECURE': not DEBUG,  # True in production (HTTPS only)
+    'AUTH_COOKIE_HTTP_ONLY': True,  # Prevent XSS attacks
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'None' if not DEBUG else 'Lax',  # None for cross-origin in production
 }
 
 
