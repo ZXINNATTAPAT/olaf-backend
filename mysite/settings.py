@@ -25,10 +25,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = 'static/'
-# STATICFILES_DIRS = [     # ไดเรกทอรีที่ใช้เก็บไฟล์ static ในระหว่างการพัฒนา
-#     BASE_DIR / "static",
-# ]
-# STATIC_ROOT = BASE_DIR / "staticfiles"  # ไดเรกทอรีที่ใช้เก็บไฟล์ static สำหรับ production
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -37,9 +38,9 @@ STATIC_URL = 'static/'
 SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['olaf-backend.onrender.com','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['olaf-backend.onrender.com', '127.0.0.1', 'localhost', '.railway.app']
 
 
 # Application definition
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -178,7 +180,8 @@ CSRF_COOKIE_HTTP_ONLY = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://olafs.netlify.app",
-    "https://olaf-backend.onrender.com"
+    "https://olaf-backend.onrender.com",
+    "https://*.railway.app"
 ]
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
 SESSION_COOKIE_SECURE = True
