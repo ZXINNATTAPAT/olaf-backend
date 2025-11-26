@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth import authenticate
 from django.conf import settings
 from django.middleware import csrf
@@ -32,7 +33,8 @@ def loginView(request):
         # Set domain for cookies based on environment
         cookie_domain = None
         if not settings.DEBUG:
-            cookie_domain = '.onrender.com'  # Use wildcard domain for Render
+            # Allow configuring domain via env var, default to None (current domain)
+            cookie_domain = os.getenv('COOKIE_DOMAIN', None)
         
         res.set_cookie(
             key=settings.SIMPLE_JWT['AUTH_COOKIE'],
@@ -150,15 +152,11 @@ def user(request):
                 status=401
             )
         
-        user = models.Account.objects.get(id=request.user.id)
-        serializer = serializers.AccountSerializer(user)
+        # request.user is already the Account object provided by CustomAuthentication
+        # No need to fetch from DB again
+        serializer = serializers.AccountSerializer(request.user)
         return response.Response(serializer.data)
         
-    except models.Account.DoesNotExist:
-        return response.Response(
-            {"error": "User not found"}, 
-            status=404
-        )
     except Exception as e:
         return response.Response(
             {"error": "Internal server error"}, 

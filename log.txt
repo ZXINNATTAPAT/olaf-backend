@@ -1,0 +1,375 @@
+2025-11-26T16:45:01.000000000Z [inf]  Starting Container
+2025-11-26T16:45:02.263250882Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:02.263270783Z [err]  [2025-11-26 16:45:01 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:02.263280094Z [err]  [2025-11-26 16:45:01 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:02.263287173Z [err]  [2025-11-26 16:45:01 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:02.263293738Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:02.263300191Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:02.263306319Z [err]      worker.init_process()
+2025-11-26T16:45:02.263312604Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:02.263318766Z [err]      self.load_wsgi()
+2025-11-26T16:45:02.263325113Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:02.263335243Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:02.263341799Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:02.263348508Z [err]      self.callable = self.load()
+2025-11-26T16:45:02.263354051Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:02.263361868Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:02.263368203Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:02.263374395Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:02.263379258Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:02.263644416Z [err]  [2025-11-26 16:45:01 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:02.263652576Z [err]  [2025-11-26 16:45:01 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:02.265222632Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:02.265232105Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:02.265237796Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:02.265242947Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:02.265266470Z [err]  [2025-11-26 16:45:01 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:02.265273898Z [err]  [2025-11-26 16:45:01 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:02.265279932Z [err]  [2025-11-26 16:45:01 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:02.265286043Z [err]  [2025-11-26 16:45:01 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:02.265397978Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:02.265401752Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:02.265405913Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:02.265410541Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:02.265414812Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:02.265418732Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:02.589877058Z [err]  [2025-11-26 16:45:02 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:02.589885766Z [err]  [2025-11-26 16:45:02 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:02.589891473Z [err]  [2025-11-26 16:45:02 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:02.589897405Z [err]  [2025-11-26 16:45:02 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:02.595622447Z [err]      self.callable = self.load()
+2025-11-26T16:45:02.595624914Z [err]  [2025-11-26 16:45:02 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:02.595635546Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:02.595641687Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:02.595647117Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:02.595656322Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:02.595658845Z [err]      worker.init_process()
+2025-11-26T16:45:02.595669164Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:02.595670510Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:02.595682103Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:02.595683512Z [err]      self.load_wsgi()
+2025-11-26T16:45:02.595696301Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:02.595697425Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:02.595707521Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:02.595711779Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:02.595719015Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:02.595723993Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:02.595730776Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:02.595745325Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:02.596433418Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:02.596437730Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:02.596441746Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:02.596446279Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:02.596450871Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:02.596456214Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:02.596460382Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:02.596464872Z [err]  [2025-11-26 16:45:02 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:02.622286394Z [err]  [2025-11-26 16:45:02 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:02.622292514Z [err]  [2025-11-26 16:45:02 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:02.622299179Z [err]  [2025-11-26 16:45:02 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:03.766122061Z [err]  [2025-11-26 16:45:03 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:03.766130240Z [err]  [2025-11-26 16:45:03 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:03.766135403Z [err]  [2025-11-26 16:45:03 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:03.767336637Z [err]  [2025-11-26 16:45:03 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:03.774526628Z [err]  [2025-11-26 16:45:03 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:03.774536501Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:03.774541523Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:03.774545558Z [err]      worker.init_process()
+2025-11-26T16:45:03.774550360Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:03.774555528Z [err]      self.load_wsgi()
+2025-11-26T16:45:03.774561332Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:03.774566194Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:03.774572606Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:03.774579230Z [err]      self.callable = self.load()
+2025-11-26T16:45:03.774585407Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:03.774590665Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:03.774596538Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:03.774603147Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:03.774609157Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:03.774617344Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:03.774622929Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:03.774629187Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:03.774634108Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:03.775967970Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:03.775976389Z [err]  [2025-11-26 16:45:03 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:03.775982246Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:03.775987868Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:03.775993575Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:03.775999009Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:03.776003763Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:03.776008500Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:03.799262716Z [err]  [2025-11-26 16:45:03 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:03.799266511Z [err]  [2025-11-26 16:45:03 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:03.799270655Z [err]  [2025-11-26 16:45:03 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:04.918120407Z [err]  [2025-11-26 16:45:04 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:04.919251011Z [err]  [2025-11-26 16:45:04 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:04.919259642Z [err]  [2025-11-26 16:45:04 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:04.924755192Z [err]  [2025-11-26 16:45:04 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:04.926091557Z [err]  [2025-11-26 16:45:04 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:04.926096510Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:04.926099323Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:04.926106270Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:04.926109393Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:04.926113807Z [err]      worker.init_process()
+2025-11-26T16:45:04.926120848Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:04.926121978Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:04.926129520Z [err]      self.load_wsgi()
+2025-11-26T16:45:04.926130456Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:04.926138157Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:04.926140991Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:04.926147617Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:04.926153837Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:04.926156273Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:04.926160688Z [err]      self.callable = self.load()
+2025-11-26T16:45:04.926166241Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:04.926168690Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:04.926173629Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:04.927245417Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:04.927254036Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:04.927260763Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:04.927265875Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:04.927273560Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:04.927280356Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:04.927287321Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:04.927292532Z [err]  [2025-11-26 16:45:04 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:04.959175986Z [err]  [2025-11-26 16:45:04 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:04.959180736Z [err]  [2025-11-26 16:45:04 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:04.959184898Z [err]  [2025-11-26 16:45:04 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:06.097610551Z [err]  [2025-11-26 16:45:06 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:06.097623564Z [err]  [2025-11-26 16:45:06 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:06.097629226Z [err]  [2025-11-26 16:45:06 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:06.097638398Z [err]  [2025-11-26 16:45:06 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:06.097643201Z [err]  [2025-11-26 16:45:06 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:06.097656640Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:06.097662263Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:06.097666474Z [err]      worker.init_process()
+2025-11-26T16:45:06.097670904Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:06.097680216Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:06.097680963Z [err]      self.load_wsgi()
+2025-11-26T16:45:06.097687588Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:06.097691126Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:06.097692880Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:06.097697860Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:06.097701944Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:06.097704221Z [err]      self.callable = self.load()
+2025-11-26T16:45:06.097709909Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:06.097715888Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:06.097720293Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:06.098835088Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:06.098841697Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:06.098847120Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:06.098855164Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:06.098861599Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:06.098867376Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:06.098873202Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:06.098878517Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:06.098883653Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:06.098889449Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:06.098894549Z [err]  [2025-11-26 16:45:06 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:06.329887007Z [err]  [2025-11-26 16:45:06 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:06.329895853Z [err]  [2025-11-26 16:45:06 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:06.330012763Z [err]  [2025-11-26 16:45:06 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:07.300075072Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:07.300089536Z [err]      self.callable = self.load()
+2025-11-26T16:45:07.300098092Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:07.300105656Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:07.300112539Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:07.300120430Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:07.300127161Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:07.300133208Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:07.300152190Z [err]  [2025-11-26 16:45:07 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:07.300160115Z [err]  [2025-11-26 16:45:07 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:07.300166244Z [err]  [2025-11-26 16:45:07 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:07.300171809Z [err]  [2025-11-26 16:45:07 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:07.300178207Z [err]  [2025-11-26 16:45:07 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:07.300185350Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:07.300192610Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:07.300197762Z [err]      worker.init_process()
+2025-11-26T16:45:07.300205344Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:07.300212102Z [err]      self.load_wsgi()
+2025-11-26T16:45:07.300219290Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:07.300226291Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:07.301621788Z [err]  [2025-11-26 16:45:07 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:07.301634428Z [err]  [2025-11-26 16:45:07 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:07.301642154Z [err]  [2025-11-26 16:45:07 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:07.301648418Z [err]  [2025-11-26 16:45:07 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:07.301701656Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:07.301708797Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:07.301716944Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:07.301725273Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:07.301733150Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:07.301741513Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:07.301748537Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:07.301755245Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:07.301765133Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:07.301771501Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:08.398030401Z [err]  [2025-11-26 16:45:08 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:08.398041576Z [err]  [2025-11-26 16:45:08 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:08.398048949Z [err]  [2025-11-26 16:45:08 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:08.398055134Z [err]  [2025-11-26 16:45:08 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:08.404248502Z [err]  [2025-11-26 16:45:08 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:08.404249132Z [err]      self.callable = self.load()
+2025-11-26T16:45:08.404257154Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:08.404257544Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:08.404265348Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:08.404271299Z [err]      worker.init_process()
+2025-11-26T16:45:08.404271933Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:08.404276534Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:08.404282017Z [err]      self.load_wsgi()
+2025-11-26T16:45:08.404283256Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:08.404287540Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:08.404289737Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:08.404294445Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:08.404295703Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:08.404300399Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:08.404302160Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:08.404309285Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:08.404315083Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:08.404320309Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:08.405048994Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:08.405069782Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:08.405077666Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:08.405084190Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:08.405089948Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:08.405095675Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:08.405101574Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:08.405107782Z [err]  [2025-11-26 16:45:08 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:08.431573327Z [err]  [2025-11-26 16:45:08 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:08.431579248Z [err]  [2025-11-26 16:45:08 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:08.431585578Z [err]  [2025-11-26 16:45:08 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:09.576677695Z [err]  [2025-11-26 16:45:09 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:09.576684524Z [err]  [2025-11-26 16:45:09 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:09.576688766Z [err]  [2025-11-26 16:45:09 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:09.578088990Z [err]  [2025-11-26 16:45:09 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:09.581887735Z [err]  [2025-11-26 16:45:09 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:09.581895099Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:09.581900584Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:09.581902850Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:09.581906179Z [err]      worker.init_process()
+2025-11-26T16:45:09.581911626Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:09.581913781Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:09.581916998Z [err]      self.load_wsgi()
+2025-11-26T16:45:09.581920946Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:09.581925022Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:09.581929177Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:09.581933246Z [err]      self.callable = self.load()
+2025-11-26T16:45:09.581944073Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:09.581959164Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:09.581964515Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:09.581969259Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:09.581973513Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:09.581977192Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:09.581981126Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:09.583480673Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:09.583490580Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:09.583497629Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:09.583505205Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:09.583517309Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:09.583523751Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:09.583530117Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:09.583536002Z [err]  [2025-11-26 16:45:09 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:09.607912416Z [err]  [2025-11-26 16:45:09 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:09.607918050Z [err]  [2025-11-26 16:45:09 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:09.607923982Z [err]  [2025-11-26 16:45:09 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:10.847750598Z [err]  [2025-11-26 16:45:10 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:10.847755901Z [err]  [2025-11-26 16:45:10 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:10.847762814Z [err]  [2025-11-26 16:45:10 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:10.847767776Z [err]  [2025-11-26 16:45:10 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:10.849905582Z [err]  [2025-11-26 16:45:10 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:10.849912435Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:10.849917377Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:10.849922766Z [err]      worker.init_process()
+2025-11-26T16:45:10.849925189Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:10.849928403Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:10.849933441Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:10.849935434Z [err]      self.load_wsgi()
+2025-11-26T16:45:10.849938090Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:10.849943280Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:10.849944033Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:10.849949982Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:10.849952239Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:10.849955511Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:10.849958578Z [err]      self.callable = self.load()
+2025-11-26T16:45:10.849963387Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:10.849971459Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:10.849976977Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:10.849982364Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:10.851274942Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:10.851281360Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:10.851286044Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:10.851290732Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:10.851294942Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:10.851299079Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:10.851303352Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:10.851307355Z [err]  [2025-11-26 16:45:10 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:10.877648370Z [err]  [2025-11-26 16:45:10 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:10.877654065Z [err]  [2025-11-26 16:45:10 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:10.877659754Z [err]  [2025-11-26 16:45:10 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:12.012078005Z [err]  [2025-11-26 16:45:11 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:12.012082264Z [err]  [2025-11-26 16:45:11 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:12.012087275Z [err]  [2025-11-26 16:45:11 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:12.012095947Z [err]  [2025-11-26 16:45:11 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:12.012100541Z [err]  [2025-11-26 16:45:11 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:12.012105441Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:12.012110719Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:12.012115143Z [err]      worker.init_process()
+2025-11-26T16:45:12.012119900Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:12.012124201Z [err]      self.load_wsgi()
+2025-11-26T16:45:12.012128982Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:12.012134609Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:12.012139500Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:12.012146328Z [err]      self.callable = self.load()
+2025-11-26T16:45:12.012151211Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:12.012155943Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:12.012161756Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:12.012166930Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:12.012172069Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:12.012176604Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:12.014740816Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:12.014748626Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:12.014753332Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:12.014759058Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:12.014763154Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:12.014768615Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:12.014773046Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:12.014777238Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:12.014781093Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:12.014788895Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:12.014794572Z [err]  [2025-11-26 16:45:11 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:12.028313935Z [err]  [2025-11-26 16:45:12 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:12.028317604Z [err]  [2025-11-26 16:45:12 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:12.028322650Z [err]  [2025-11-26 16:45:12 +0000] [1] [ERROR] Reason: Worker failed to boot.
+2025-11-26T16:45:13.336752055Z [err]  [2025-11-26 16:45:13 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-11-26T16:45:13.336757694Z [err]  [2025-11-26 16:45:13 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-11-26T16:45:13.336764040Z [err]  [2025-11-26 16:45:13 +0000] [1] [INFO] Using worker: sync
+2025-11-26T16:45:13.336769939Z [err]  [2025-11-26 16:45:13 +0000] [2] [INFO] Booting worker with pid: 2
+2025-11-26T16:45:13.336775856Z [err]  [2025-11-26 16:45:13 +0000] [2] [ERROR] Exception in worker process
+2025-11-26T16:45:13.336782341Z [err]  Traceback (most recent call last):
+2025-11-26T16:45:13.336788918Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-11-26T16:45:13.336794861Z [err]      worker.init_process()
+2025-11-26T16:45:13.336801377Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-11-26T16:45:13.336807235Z [err]      self.load_wsgi()
+2025-11-26T16:45:13.336813530Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-11-26T16:45:13.336819376Z [err]      self.wsgi = self.app.wsgi()
+2025-11-26T16:45:13.336826563Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-11-26T16:45:13.336833708Z [err]      self.callable = self.load()
+2025-11-26T16:45:13.336839674Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-11-26T16:45:13.336846205Z [err]      return self.load_wsgiapp()
+2025-11-26T16:45:13.336853558Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-11-26T16:45:13.336859499Z [err]      return util.import_app(self.app_uri)
+2025-11-26T16:45:13.336865814Z [err]    File "/app/.venv/lib/python3.9/site-packages/gunicorn/util.py", line 370, in import_app
+2025-11-26T16:45:13.336871301Z [err]      mod = importlib.import_module(module)
+2025-11-26T16:45:13.336998893Z [err]    File "/mise/installs/python/3.9.18/lib/python3.9/importlib/__init__.py", line 127, in import_module
+2025-11-26T16:45:13.337004589Z [err]      return _bootstrap._gcd_import(name[level:], package, level)
+2025-11-26T16:45:13.337009828Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:13.337016021Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:13.337021564Z [err]    File "<frozen importlib._bootstrap>", line 972, in _find_and_load_unlocked
+2025-11-26T16:45:13.337026610Z [err]    File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+2025-11-26T16:45:13.337032439Z [err]    File "<frozen importlib._bootstrap>", line 1030, in _gcd_import
+2025-11-26T16:45:13.337038122Z [err]    File "<frozen importlib._bootstrap>", line 1007, in _find_and_load
+2025-11-26T16:45:13.337043869Z [err]    File "<frozen importlib._bootstrap>", line 984, in _find_and_load_unlocked
+2025-11-26T16:45:13.337049744Z [err]  ModuleNotFoundError: No module named 'your_project_name'
+2025-11-26T16:45:13.337055774Z [err]  [2025-11-26 16:45:13 +0000] [2] [INFO] Worker exiting (pid: 2)
+2025-11-26T16:45:13.337061530Z [err]  [2025-11-26 16:45:13 +0000] [1] [ERROR] Worker (pid:2) exited with code 3
+2025-11-26T16:45:13.337067867Z [err]  [2025-11-26 16:45:13 +0000] [1] [ERROR] Shutting down: Master
+2025-11-26T16:45:13.337073340Z [err]  [2025-11-26 16:45:13 +0000] [1] [ERROR] Reason: Worker failed to boot.

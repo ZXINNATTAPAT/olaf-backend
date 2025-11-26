@@ -107,7 +107,7 @@ if DATABASE_URL:
     # Use connection string (recommended for Neon)
     import dj_database_url
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
     # Use individual parameters (fallback)
@@ -119,6 +119,7 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'CONN_MAX_AGE': 600, # Keep connections open for 10 minutes
             'OPTIONS': {
                 'sslmode': 'require',  # Required for Neon
             },

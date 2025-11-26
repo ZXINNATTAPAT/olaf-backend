@@ -10,6 +10,8 @@ def enforce_csrf(request):
       raise rest_exceptions.PermissionDenied('CSRF Failed: %s' % reason)
 
 
+from django.core.cache import cache
+
 class CustomAuthentication(jwt_authentication.JWTAuthentication):
     def authenticate(self, request):
         # First try to get token from cookies (HTTP-only cookies are more secure)
@@ -35,4 +37,29 @@ class CustomAuthentication(jwt_authentication.JWTAuthentication):
         except Exception as e:
             # If token validation fails, return None to allow other auth methods
             return None
+
+    def get_user(self, validated_token):
+        """
+        Attempts to find and return a user using the given validated token.
+        """
+        try:
+            user_id = validated_token[settings.SIMPLE_JWT['USER_ID_CLAIM']]
+        except KeyError:
+            return None
+
+        # Check cache first
+        cache_key = f'user_{user_id}'
+        user = cache.get(cache_key)
+
+        if user:
+            return user
+
+        # If not in cache, fetch from DB
+        user = super().get_user(validated_token)
+        
+        # Cache the user object for 60 seconds
+        # This significantly reduces DB hits for sequential requests
+        cache.set(cache_key, user, timeout=60)
+        
+        return user
         
