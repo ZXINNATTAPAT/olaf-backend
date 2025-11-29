@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python310", "curl"]
+nixPkgs = ["python310", "curl", "gcc"]
 
 [phases.install]
 cmds = [
