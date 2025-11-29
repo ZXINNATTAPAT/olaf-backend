@@ -106,6 +106,11 @@ async def blog_api_handler(request):
     path_info = request.path_info
     method = request.method.upper()
     
+    # Skip routes that should be handled by DRF (must come before Bolt patterns)
+    # These routes are explicitly handled by DRF in urls.py
+    if path_info.startswith('/api/posts/feed') or path_info.startswith('/api/posts/create-with-image'):
+        return FallThroughToDRF()
+    
     # Remove /api prefix to get relative path for the API
     api_path = path_info.replace('/api', '', 1) or '/'
     # Remove trailing slash for matching (Bolt routes don't have trailing slashes)
@@ -344,9 +349,14 @@ from blog import bolt_api as blog_api
 @csrf_exempt
 def swagger_ui(request):
     """Swagger UI for API documentation"""
-    # BoltAPI.view() handles OpenAPI/Swagger UI routes automatically
-    # It will serve Swagger UI at /docs/ or /openapi.json based on the request path
-    return async_to_sync(blog_api.api.view)(request)
+    # BoltAPI.view() is not async, it's a decorator method
+    # For now, return a simple message or redirect to OpenAPI schema
+    # The actual Swagger UI should be served by BoltAPI's built-in routes
+    return JsonResponse({
+        "message": "Swagger UI",
+        "openapi_schema": "/api/openapi.json",
+        "note": "Use /api/openapi.json for OpenAPI schema"
+    })
 
 @csrf_exempt
 def openapi_schema(request):
@@ -361,7 +371,7 @@ urlpatterns = [
     # BoltAPI automatically serves OpenAPI at /schema (configured in OpenAPIConfig)
     path('api/docs/', swagger_ui, name='swagger-ui'),
     path('api/openapi.json', openapi_schema, name='openapi-schema'),
-    path('api/schema', async_to_sync(blog_api.api.view), name='openapi-schema-bolt'),
+    # /api/schema is handled by blog_api_view regex pattern below
     
     # Mount CloudDiary API at /api/clouddiary/ (most specific)
     re_path(r'^api/clouddiary/.*$', clouddiary_api_view),
