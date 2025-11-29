@@ -38,7 +38,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# Default to True for development, set DEBUG=False in production via environment variable
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['olaf-backend.onrender.com', '127.0.0.1', 'localhost', '.railway.app']
 
@@ -180,7 +181,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Expose headers for frontend access
-CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+# Note: Set-Cookie cannot be exposed (it's a forbidden header)
+# But we expose other headers that frontend might need
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"]
 
 # CSRF Configuration
 CSRF_COOKIE_SECURE = not DEBUG  # True in production (HTTPS only)
@@ -248,10 +251,19 @@ SIMPLE_JWT = {
     'AUTH_COOKIE': 'access',
     'AUTH_COOKIE_REFRESH': 'refresh',
     'AUTH_COOKIE_DOMAIN': os.getenv('COOKIE_DOMAIN', None),  # Set via environment variable for Railway
-    'AUTH_COOKIE_SECURE': not DEBUG,  # True in production (HTTPS only)
+    # Cookie security settings
+    # Note: For cross-origin (localhost:3000 -> localhost:8000), we need SameSite=None
+    # Chrome allows Secure=False with SameSite=None for localhost in development
+    # For development: Secure=False, SameSite=None (works with localhost cross-origin)
+    # For production: Secure=True, SameSite=None (for cross-origin)
+    # IMPORTANT: When SameSite=None, Secure must be True in production, but Chrome allows False for localhost
+    'AUTH_COOKIE_SECURE': os.getenv('COOKIE_SECURE', 'False' if DEBUG else 'True') == 'True',
     'AUTH_COOKIE_HTTP_ONLY': True,  # Prevent XSS attacks
     'AUTH_COOKIE_PATH': '/',
-    'AUTH_COOKIE_SAMESITE': 'None' if not DEBUG else 'Lax',  # None for cross-origin in production
+    # Use None for cross-origin support (both dev and prod)
+    # Frontend (localhost:3000) and backend (localhost:8000) are different origins
+    # Chrome allows Secure=False with SameSite=None for localhost
+    'AUTH_COOKIE_SAMESITE': os.getenv('COOKIE_SAMESITE', 'None'),
 }
 
 

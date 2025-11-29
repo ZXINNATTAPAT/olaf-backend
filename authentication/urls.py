@@ -25,4 +25,5 @@ urlpatterns = [
     path("user/", views.user),
     path("check/", views.checkAuth, name="check_auth"),
     path('csrf/', views.get_csrf_token, name='get_csrf_token'),
+    path('test-cookies/', views.test_cookies, name='test_cookies'),  # Test endpoint
 ]

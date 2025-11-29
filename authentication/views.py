@@ -35,6 +35,7 @@ def loginView(request):
 
         # Generate tokens
         token_data = services.get_user_tokens(user)
+        logger.info(f"🔑 Generated tokens for user {user.email} - Access: {len(token_data.get('access_token', ''))}, Refresh: {len(token_data.get('refresh_token', ''))}")
         
         # Create response with user data
         user_serializer = serializers.AccountSerializer(user)
@@ -44,17 +45,34 @@ def loginView(request):
         }, status=status.HTTP_200_OK)
         
         # Set authentication cookies
+        logger.info(f"🍪 About to set cookies for user {user.email}")
         services.set_auth_cookies(
             res, 
             access_token=token_data["access_token"], 
             refresh_token=token_data["refresh_token"]
         )
+        logger.info(f"🍪 Finished setting cookies for user {user.email}")
 
         # Set CSRF token in header
         csrf_token = csrf.get_token(request)
         res["X-CSRFToken"] = csrf_token
         
+        # Explicitly set CORS headers (django-cors-headers should do this, but ensure it's set)
+        origin = request.META.get('HTTP_ORIGIN')
+        if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+            res["Access-Control-Allow-Origin"] = origin
+            res["Access-Control-Allow-Credentials"] = "true"
+        
+        # Log response headers for debugging (including cookies)
+        # Note: Set-Cookie headers won't appear in dict(res.items()) but will be in final response
+        logger.info(f"Login response headers: {dict(res.items())}")
+        logger.info(f"Login response cookies set: access={bool(token_data.get('access_token'))}, refresh={bool(token_data.get('refresh_token'))}")
+        logger.info(f"Origin: {origin}, CORS headers set: {bool(origin and origin in settings.CORS_ALLOWED_ORIGINS)}")
+        
+        # Verify cookies are in response (they should be set by services.set_auth_cookies)
+        # We can't directly check Set-Cookie in response object, but we log that we called set_cookie
         logger.info(f"User {user.email} logged in successfully")
+        
         return res
         
     except rest_exceptions.ValidationError as e:
@@ -109,6 +127,16 @@ def registerView(request):
         csrf_token = csrf.get_token(request)
         res["X-CSRFToken"] = csrf_token
         
+        # Explicitly set CORS headers (django-cors-headers should do this, but ensure it's set)
+        origin = request.META.get('HTTP_ORIGIN')
+        if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+            res["Access-Control-Allow-Origin"] = origin
+            res["Access-Control-Allow-Credentials"] = "true"
+        
+        # Log response headers for debugging
+        logger.info(f"Register response headers: {dict(res.items())}")
+        logger.info(f"Register response cookies set: access={bool(token_data.get('access_token'))}, refresh={bool(token_data.get('refresh_token'))}")
+        logger.info(f"Origin: {origin}, CORS headers set: {bool(origin and origin in settings.CORS_ALLOWED_ORIGINS)}")
         logger.info(f"User {user.email} registered successfully")
         return res
         
@@ -149,6 +177,12 @@ def logoutView(request):
         )
         services.clear_auth_cookies(res)
         
+        # Set CORS headers
+        origin = request.META.get('HTTP_ORIGIN')
+        if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+            res["Access-Control-Allow-Origin"] = origin
+            res["Access-Control-Allow-Credentials"] = "true"
+        
         logger.info(f"User {request.user.email if request.user.is_authenticated else 'Unknown'} logged out")
         return res
         
@@ -167,32 +201,71 @@ class CookieTokenRefreshSerializer(jwt_serializers.TokenRefreshSerializer):
     refresh = None
 
     def validate(self, attrs):
-        attrs['refresh'] = self.context['request'].COOKIES.get(
-            settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH']
-        )
-        if attrs['refresh']:
+        # Try to get refresh token from multiple sources:
+        # 1. Request body (if sent explicitly)
+        # 2. Cookie (preferred for security)
+        # 3. Authorization header (fallback)
+        request = self.context['request']
+        
+        # Log cookies for debugging - use INFO level for visibility
+        all_cookies = dict(request.COOKIES)
+        logger.info(f"🔄 Refresh token request - Cookies received: {list(all_cookies.keys())}")
+        logger.info(f"🔄 All cookies: {all_cookies}")
+        logger.info(f"🔄 Looking for cookie: {settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH']}")
+        logger.info(f"🔄 Request origin: {request.META.get('HTTP_ORIGIN', 'None')}")
+        logger.info(f"🔄 Request host: {request.META.get('HTTP_HOST', 'None')}")
+        
+        # Check request body first
+        if 'refresh' in request.data:
+            attrs['refresh'] = request.data['refresh']
+            logger.debug("🔄 Refresh token from request body")
+        # Check cookie
+        elif request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH']):
+            attrs['refresh'] = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+            logger.debug("🔄 Refresh token from cookie")
+        # Check Authorization header as fallback
+        else:
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            if auth_header.startswith('Bearer '):
+                attrs['refresh'] = auth_header.split(' ')[1]
+                logger.debug("🔄 Refresh token from Authorization header")
+        
+        if attrs.get('refresh'):
             return super().validate(attrs)
         else:
+            logger.warning(f"❌ No refresh token found. Cookies: {list(all_cookies.keys())}")
             raise jwt_exceptions.InvalidToken(
-                'No valid refresh token found in cookie')
+                'No valid refresh token found. Please provide refresh token in cookie, body, or Authorization header.')
 
 
 class CookieTokenRefreshView(jwt_views.TokenRefreshView):
     serializer_class = CookieTokenRefreshSerializer
+    permission_classes = []  # Allow unauthenticated access for token refresh
 
     def finalize_response(self, request, response, *args, **kwargs):
         try:
-            if response.data.get("refresh"):
-                services.set_auth_cookies(
-                    response,
-                    access_token=response.data.get("access"),
-                    refresh_token=response.data['refresh']
-                )
-                del response.data["refresh"]
-            
-            # Update CSRF token
-            csrf_token = csrf.get_token(request)
-            response["X-CSRFToken"] = csrf_token
+            # Only set cookies if response is successful (200 OK)
+            if response.status_code == 200 and response.data.get("access"):
+                # Set cookies with new tokens
+                refresh_token = response.data.get("refresh")
+                if refresh_token:
+                    services.set_auth_cookies(
+                        response,
+                        access_token=response.data.get("access"),
+                        refresh_token=refresh_token
+                    )
+                    del response.data["refresh"]
+                else:
+                    # If no new refresh token, just update access token
+                    services.set_auth_cookies(
+                        response,
+                        access_token=response.data.get("access"),
+                        refresh_token=None
+                    )
+                
+                # Update CSRF token
+                csrf_token = csrf.get_token(request)
+                response["X-CSRFToken"] = csrf_token
             
             return super().finalize_response(request, response, *args, **kwargs)
         except Exception as e:
@@ -252,10 +325,71 @@ def get_csrf_token(request):
             "csrfToken": csrf_token
         }, status=status.HTTP_200_OK)
         res["X-CSRFToken"] = csrf_token
+        
+        # Set CORS headers
+        origin = request.META.get('HTTP_ORIGIN')
+        if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+            res["Access-Control-Allow-Origin"] = origin
+            res["Access-Control-Allow-Credentials"] = "true"
+        
         return res
     except Exception as e:
         logger.error(f"CSRF token error: {str(e)}", exc_info=True)
         return response.Response(
             {"error": "Failed to get CSRF token"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@rest_decorators.api_view(["GET", "POST"])
+@rest_decorators.permission_classes([])
+def test_cookies(request):
+    """
+    Test endpoint to verify cookie setting works.
+    Sets a test cookie and returns cookie information.
+    """
+    try:
+        # Set a test cookie
+        test_cookie_value = "test_cookie_value_12345"
+        res = response.Response({
+            "message": "Test cookie endpoint",
+            "test_cookie_set": True,
+            "cookies_received": dict(request.COOKIES),
+            "origin": request.META.get('HTTP_ORIGIN'),
+            "settings": {
+                "CORS_ALLOWED_ORIGINS": settings.CORS_ALLOWED_ORIGINS,
+                "CORS_ALLOW_CREDENTIALS": settings.CORS_ALLOW_CREDENTIALS,
+                "AUTH_COOKIE_SAMESITE": settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                "AUTH_COOKIE_SECURE": settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                "DEBUG": settings.DEBUG,
+            }
+        }, status=status.HTTP_200_OK)
+        
+        # Set test cookie
+        res.set_cookie(
+            'test_cookie',
+            test_cookie_value,
+            max_age=3600,
+            httponly=False,  # Allow JS to read for testing
+            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+            path='/'
+        )
+        
+        # Set CORS headers
+        origin = request.META.get('HTTP_ORIGIN')
+        if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+            res["Access-Control-Allow-Origin"] = origin
+            res["Access-Control-Allow-Credentials"] = "true"
+        elif not origin:
+            # If no origin header, allow all (for testing)
+            res["Access-Control-Allow-Origin"] = "*"
+        
+        logger.info(f"Test cookie endpoint - Origin: {origin}, Cookies: {dict(request.COOKIES)}")
+        return res
+    except Exception as e:
+        logger.error(f"Test cookie error: {str(e)}", exc_info=True)
+        return response.Response(
+            {"error": f"Test cookie failed: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

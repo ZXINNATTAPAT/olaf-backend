@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 from .models import  Post, Comment, PostLike, CommentLike
 from authentication.models import Account
 from .serializers import UserSerializer, PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
@@ -183,18 +184,36 @@ def add_post_image_path(request, post_id):
 @permission_classes([permissions.IsAuthenticated])
 def create_post_with_image(request):
     """Create a new post with image data from frontend"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     from .serializers import PostSerializer
     from shared_images.serializers import SharedImagePathSerializer
     
-    # Create the post first
+    # Log authentication status and cookies for debugging
+    all_cookies = dict(request.COOKIES)
+    logger.info(f"📝 Create post request - Cookies received: {list(all_cookies.keys())}")
+    logger.info(f"📝 User authenticated: {request.user.is_authenticated if request.user else False}")
+    logger.info(f"📝 User: {request.user.email if request.user and hasattr(request.user, 'email') else 'None'}")
+    logger.info(f"📝 Request origin: {request.META.get('HTTP_ORIGIN', 'None')}")
+    
+    # Check if user is authenticated
+    if not request.user or not request.user.is_authenticated:
+        logger.warning(f"❌ Authentication failed - No user or not authenticated. Cookies: {list(all_cookies.keys())}")
+        return Response(
+            {'error': 'Authentication required', 'detail': 'No valid authentication token found. Please login again.'}, 
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Create the post first - use authenticated user instead of user_id from request
     post_data = {
         'header': request.data.get('header'),
         'short': request.data.get('short'),
         'post_text': request.data.get('post_text'),
-        'user_id': request.data.get('user_id')
+        'user_id': request.user.id  # Use authenticated user
     }
     
-    post_serializer = PostSerializer(data=post_data)
+    post_serializer = PostSerializer(data=post_data, context={'request': request})
     if not post_serializer.is_valid():
         return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -215,9 +234,20 @@ def create_post_with_image(request):
         else:
             # If image fails, still return the post but with error info
             return Response({
-                'post': PostSerializer(post).data,
+                'post': PostSerializer(post, context={'request': request}).data,
                 'image_error': image_serializer.errors
             }, status=status.HTTP_201_CREATED)
     
     # Return the complete post with images
-    return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
+    response = Response(
+        PostSerializer(post, context={'request': request}).data, 
+        status=status.HTTP_201_CREATED
+    )
+    
+    # Ensure CORS headers are set
+    origin = request.META.get('HTTP_ORIGIN')
+    if origin and origin in settings.CORS_ALLOWED_ORIGINS:
+        response["Access-Control-Allow-Origin"] = origin
+        response["Access-Control-Allow-Credentials"] = "true"
+    
+    return response
