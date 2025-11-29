@@ -2,9 +2,11 @@
 FROM python:3.10-slim
 
 # Install Rust and Cargo (required for Django-Bolt)
+# Also install git (required for pip install from GitHub)
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
+    git \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
