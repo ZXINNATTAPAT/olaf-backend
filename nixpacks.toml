@@ -5,5 +5,8 @@ nixPkgs = ["rustc", "cargo"]
 cmds = []
 
 [phases.build]
-cmds = []
+cmds = [
+    "python manage.py migrate --noinput",
+    "python manage.py collectstatic --noinput"
+]
 
