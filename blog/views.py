@@ -20,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.select_related('user').prefetch_related(
         'comments__user', 'likes__user', 'images'
-    ).all()
+    ).order_by('-post_datetime')
     serializer_class = PostSerializer
     parser_classes = [MultiPartParser, FormParser]
 

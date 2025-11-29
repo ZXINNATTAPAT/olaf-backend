@@ -64,6 +64,9 @@ class Post(models.Model):
     def image_count(self):
         """Return the count of shared images"""
         return self.images.count()
+    
+    class Meta:
+        ordering = ['-post_datetime']
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
