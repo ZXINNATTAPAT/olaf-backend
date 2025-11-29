@@ -29,10 +29,11 @@ COPY . .
 # Collect static files
 RUN python manage.py collectstatic --noinput || true
 
-# Expose port
-EXPOSE $PORT
+# Expose port (Railway will set PORT at runtime)
+EXPOSE 8000
 
 # Run migrations and start server
 # Use sh -c to properly handle environment variables
-CMD sh -c "python manage.py migrate --noinput && gunicorn mysite.wsgi --bind 0.0.0.0:\$PORT --workers 2 --timeout 120"
+# PORT is set by Railway at runtime
+CMD sh -c "python manage.py migrate --noinput && gunicorn mysite.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120"
 
