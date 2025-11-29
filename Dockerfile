@@ -31,6 +31,6 @@ RUN python manage.py collectstatic --noinput || true
 EXPOSE $PORT
 
 # Run migrations and start server
-CMD python manage.py migrate --noinput && \
-    gunicorn mysite.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+# Use sh -c to properly handle environment variables
+CMD sh -c "python manage.py migrate --noinput && gunicorn mysite.wsgi --bind 0.0.0.0:\$PORT --workers 2 --timeout 120"
 
