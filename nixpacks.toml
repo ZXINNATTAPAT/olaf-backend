@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["python310", "rustc", "cargo"]
+
+[phases.install]
+cmds = [
+    "pip install --upgrade pip",
+    "pip install -r requirements.txt"
+]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "gunicorn mysite.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+
