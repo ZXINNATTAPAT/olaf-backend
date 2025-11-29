@@ -41,7 +41,17 @@ SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(
 # Default to True for development, set DEBUG=False in production via environment variable
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['olaf-backend.onrender.com', '127.0.0.1', 'localhost', '.railway.app']
+# ALLOWED_HOSTS configuration
+ALLOWED_HOSTS = [
+    'olaf-backend.onrender.com', 
+    '127.0.0.1', 
+    'localhost', 
+    '.railway.app',
+    '.bolt.app',  # Bolt.new platform
+]
+# Add additional hosts from environment variable if provided
+if os.getenv('ALLOWED_HOST'):
+    ALLOWED_HOSTS.extend([host.strip() for host in os.getenv('ALLOWED_HOST').split(',') if host.strip()])
 
 
 # Application definition
@@ -57,6 +67,7 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt.token_blacklist',
+    'django_bolt',  # Django-Bolt API framework
     'cloudinary',
     "blog",
     "authentication",
@@ -174,8 +185,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
-    "https://olafs.netlify.app"
+    "https://olafs.netlify.app",
 ]
+# Add additional CORS origins from environment variable if provided
+if os.getenv('CORS_ALLOWED_ORIGINS'):
+    CORS_ALLOWED_ORIGINS.extend([origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS').split(',') if origin.strip()])
 
 # Allow credentials for CORS
 CORS_ALLOW_CREDENTIALS = True
@@ -194,7 +208,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://olafs.netlify.app",
     "https://olaf-backend.onrender.com",
-    "https://*.railway.app"
+    "https://*.railway.app",
+    "https://*.bolt.app",  # Bolt.new platform
 ]
 
 # Session Configuration
