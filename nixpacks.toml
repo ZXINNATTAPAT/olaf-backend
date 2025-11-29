@@ -5,11 +5,6 @@ nixPkgs = ["python310", "curl"]
 cmds = [
   "python -m venv --copies /opt/venv",
   "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
-  "source $HOME/.cargo/env",
-  "export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\"",
-  "rustc --version",
-  "cargo --version",
-  "/opt/venv/bin/pip install --upgrade pip",
-  "/opt/venv/bin/pip install -r requirements.txt"
+  "bash -c 'source $HOME/.cargo/env && export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && rustc --version && cargo --version && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install -r requirements.txt'"
 ]
 
