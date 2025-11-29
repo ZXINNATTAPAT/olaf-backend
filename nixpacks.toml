@@ -4,8 +4,7 @@ nixPkgs = ["python310", "curl"]
 [phases.install]
 cmds = [
   "python -m venv --copies /opt/venv",
-  ". /opt/venv/bin/activate",
   "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y",
-  "export PATH=\"$HOME/.cargo/bin:$PATH\" && pip install -r requirements.txt"
+  "export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && /opt/venv/bin/pip install -r requirements.txt"
 ]
 
