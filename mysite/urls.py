@@ -13,17 +13,18 @@ urlpatterns = [
     # Access API docs at: /api/docs/
     
     # Django REST Framework APIs - specific routes that Bolt doesn't handle
-    # These must come BEFORE Bolt patterns to take precedence
+    # These MUST come BEFORE Bolt regex patterns to take precedence
+    # Use exact path() instead of regex to ensure they match first
     path('api/posts/feed/', post_feed, name='post-feed'),  # Feed endpoint
     path('api/posts/create-with-image/', create_post_with_image, name='create-post-with-image'),  # Custom endpoint
-    # CloudDiary is now handled by Bolt API (commented out DRF route)
-    # path('api/clouddiary/', include('clouddiary.urls', namespace='clouddiary')),
     path('api/shared-images/', include('shared_images.urls', namespace='shared_images')),
     
     # Django-Bolt APIs (enabled - handles /api/posts and /api/auth)
+    # Note: Bolt regex patterns will match /api/* but specific paths above take precedence
     *bolt_urls_config.urlpatterns,
     
     # DRF blog and auth as fallback for other routes not handled by Bolt
+    # These come after Bolt patterns, so Bolt routes take precedence
     path('api/', include('blog.urls')),  
     path('api/auth/',include('authentication.urls' ,namespace='authentication')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

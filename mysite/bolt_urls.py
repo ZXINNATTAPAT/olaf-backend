@@ -249,6 +249,12 @@ async def auth_api_handler(request):
 @csrf_exempt
 def blog_api_view(request):
     """Sync wrapper for blog API async handler"""
+    # Check if this path should be handled by DRF first
+    path_info = request.path_info
+    if path_info.startswith('/api/posts/feed') or path_info.startswith('/api/posts/create-with-image'):
+        # Let Django try other URL patterns (DRF routes)
+        raise Http404("Route handled by DRF")
+    
     try:
         result = async_to_sync(blog_api_handler)(request)
         # If handler returns FallThroughToDRF, it means no route matched - let Django try other patterns
