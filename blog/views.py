@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from .models import  Post, Comment, PostLike, CommentLike
 from authentication.models import Account
-from .serializers import UserSerializer, PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
+from .serializers import UserSerializer, PostSerializer, PostFeedSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
 from shared_images.views import upload_image_to_object, get_object_images, get_primary_image, set_primary_image, delete_image
 from authentication.authenticate import CustomAuthentication
 
@@ -33,6 +33,10 @@ class PostViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+    def list(self, request, *args, **kwargs):
+        """List posts - use PostSerializer by default"""
+        return super().list(request, *args, **kwargs)
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.select_related('user', 'post').prefetch_related('likes__user').all()
@@ -178,6 +182,35 @@ def add_post_image_path(request, post_id):
     # Use the shared images add_image_path_to_object function
     from shared_images.views import add_image_path_to_object
     return add_image_path_to_object(request, content_type.id, post_id)
+
+@api_view(['GET'])
+@authentication_classes([CustomAuthentication])
+@permission_classes([permissions.AllowAny])
+def post_feed(request):
+    """Get posts feed - lightweight version without post_text and comments"""
+    from rest_framework.pagination import PageNumberPagination
+    
+    # Get pagination parameters
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 20))
+    
+    # Get queryset
+    queryset = Post.objects.select_related('user').prefetch_related(
+        'likes__user', 'images'
+    ).order_by('-post_datetime')
+    
+    # Manual pagination
+    paginator = PageNumberPagination()
+    paginator.page_size = page_size
+    paginator.page_size_query_param = 'page_size'
+    paginator.max_page_size = 100
+    
+    page_obj = paginator.paginate_queryset(queryset, request)
+    
+    # Serialize with PostFeedSerializer (no post_text, no comments)
+    serializer = PostFeedSerializer(page_obj, many=True, context={'request': request})
+    
+    return paginator.get_paginated_response(serializer.data)
 
 @api_view(['POST'])
 @authentication_classes([CustomAuthentication])

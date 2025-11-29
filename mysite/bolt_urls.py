@@ -3,79 +3,231 @@ Django-Bolt URL configuration.
 This integrates Django-Bolt API routes with Django's URL system.
 """
 from django.urls import path, re_path
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from asgiref.sync import async_to_sync
 from blog import bolt_api as blog_api
 from authentication import bolt_api as auth_api
+from clouddiary import bolt_api as clouddiary_api
+import re
+import inspect
+import json
+from typing import get_origin, get_args, Union
 
-# Create async view functions to mount BoltAPI instances
-# BoltAPI uses async handlers, so we need to properly handle async/sync conversion
+# Special marker class to indicate route should fall through to DRF
+class FallThroughToDRF:
+    pass
+
+def extract_handler_params(handler, request, path_params=None):
+    """Extract parameters for BoltAPI handler from Django request"""
+    sig = inspect.signature(handler)
+    bound_params = {}
+    
+    # Add path parameters first
+    if path_params:
+        bound_params.update(path_params)
+    
+    # Check if handler needs request object
+    if 'request' in sig.parameters and 'request' not in bound_params:
+        bound_params['request'] = request
+    
+    # Extract query parameters
+    for param_name, param in sig.parameters.items():
+        if param_name in bound_params:
+            continue  # Already set from path params or request
+            
+        if param_name in request.GET:
+            param_value = request.GET[param_name]
+            # Convert to appropriate type
+            try:
+                # Check for Optional types (Union with None)
+                origin = get_origin(param.annotation)
+                args = get_args(param.annotation) if origin else ()
+                
+                # Handle Optional[int], Optional[float], etc.
+                if origin is Union:
+                    # Optional is Union[Type, None], get the actual type
+                    non_none_types = [arg for arg in args if arg is not type(None)]
+                    if non_none_types:
+                        actual_type = non_none_types[0]
+                        if actual_type == int:
+                            bound_params[param_name] = int(param_value)
+                        elif actual_type == float:
+                            bound_params[param_name] = float(param_value)
+                        elif actual_type == bool:
+                            bound_params[param_name] = param_value.lower() in ('true', '1', 'yes')
+                        else:
+                            bound_params[param_name] = param_value
+                    else:
+                        bound_params[param_name] = param_value
+                elif param.annotation == int:
+                    bound_params[param_name] = int(param_value)
+                elif param.annotation == float:
+                    bound_params[param_name] = float(param_value)
+                elif param.annotation == bool:
+                    bound_params[param_name] = param_value.lower() in ('true', '1', 'yes')
+                else:
+                    bound_params[param_name] = param_value
+            except (ValueError, TypeError) as e:
+                # If conversion fails, skip this parameter or use default
+                if param.default != inspect.Parameter.empty:
+                    bound_params[param_name] = param.default
+                # If no default and it's Optional, set to None
+                elif origin is Union and type(None) in args:
+                    bound_params[param_name] = None
+        elif param.default != inspect.Parameter.empty:
+            # Use default value
+            bound_params[param_name] = param.default
+    
+    # For POST/PUT/PATCH, try to get request body
+    if request.method in ('POST', 'PUT', 'PATCH') and request.body:
+        try:
+            body_data = json.loads(request.body)
+            # Check if handler expects a data parameter (like LoginSerializer)
+            for param_name, param in sig.parameters.items():
+                if param_name == 'data' and param_name not in bound_params:
+                    # Try to instantiate the serializer type
+                    param_type = param.annotation
+                    if hasattr(param_type, '__call__'):
+                        try:
+                            bound_params[param_name] = param_type(**body_data)
+                        except:
+                            bound_params[param_name] = body_data
+                    else:
+                        bound_params[param_name] = body_data
+        except:
+            pass
+    
+    return bound_params
 
 async def blog_api_handler(request):
     """Async handler for blog BoltAPI"""
-    from django_bolt.responses import JSON
-    
     # Extract path and method
     path_info = request.path_info
-    method = request.method.lower()
+    method = request.method.upper()
     
     # Remove /api prefix to get relative path for the API
     api_path = path_info.replace('/api', '', 1) or '/'
+    # Remove trailing slash for matching (Bolt routes don't have trailing slashes)
+    if api_path != '/' and api_path.endswith('/'):
+        api_path = api_path[:-1]
     
     # Get the route handler from BoltAPI's internal routing
-    # BoltAPI stores routes in _routes dict
+    # BoltAPI stores routes as list of tuples: (method, path, index, handler)
     try:
         routes = blog_api.api._routes
-        route_key = (method, api_path)
         
-        # Try exact match first
-        if route_key in routes:
-            handler = routes[route_key]
-            # Call the handler - it should be async
-            result = await handler(request)
-            # Handle different response types
-            if isinstance(result, dict):
-                return JsonResponse(result)
-            elif hasattr(result, 'to_response'):
-                return result.to_response()
+        # Try to find matching route
+        matched = False
+        for route_method, route_path, _, handler in routes:
+            if route_method != method:
+                continue
+            
+            path_params = None
+            
+            # Try exact match first
+            if route_path == api_path:
+                matched = True
+            # Try pattern matching for path parameters (e.g., /posts/{post_id})
+            elif '{' in route_path:
+                # Convert route_path to regex pattern
+                pattern = route_path.replace('{', '(?P<').replace('}', '>[^/]+)')
+                match = re.match(f'^{pattern}$', api_path)
+                if match:
+                    matched = True
+                    # Extract path parameters
+                    params = match.groupdict()
+                    if params:
+                        # Convert string params to appropriate types based on handler signature
+                        sig = inspect.signature(handler)
+                        path_params = {}
+                        for param_name, param_value in params.items():
+                            if param_name in sig.parameters:
+                                param_type = sig.parameters[param_name].annotation
+                                if param_type == int:
+                                    path_params[param_name] = int(param_value)
+                                elif param_type == float:
+                                    path_params[param_name] = float(param_value)
+                                else:
+                                    path_params[param_name] = param_value
+                else:
+                    continue  # Pattern doesn't match
             else:
-                return JsonResponse({'data': result})
+                continue  # No match
+            
+            # If we found a match, handle the request
+            if matched:
+                # Extract all parameters (path + query + body)
+                bound_params = extract_handler_params(handler, request, path_params)
+                
+                # Call handler with bound parameters
+                result = await handler(**bound_params)
+                
+                if isinstance(result, dict):
+                    return JsonResponse(result)
+                elif hasattr(result, 'to_response'):
+                    return result.to_response()
+                else:
+                    return JsonResponse({'data': result})
         
-        # Try to find matching route (for path parameters)
-        # This is simplified - BoltAPI may have more sophisticated routing
-        for (route_method, route_path), handler in routes.items():
-            if route_method == method:
-                # Simple path matching (BoltAPI likely has better routing)
-                if route_path == api_path or (route_path.endswith('}') and api_path.startswith(route_path.split('{')[0])):
-                    result = await handler(request)
-                    if isinstance(result, dict):
-                        return JsonResponse(result)
-                    elif hasattr(result, 'to_response'):
-                        return result.to_response()
-                    else:
-                        return JsonResponse({'data': result})
-        
-        return JsonResponse({'error': 'Not found'}, status=404)
+        # If no route matched, return FallThroughToDRF to let Django try other URL patterns (DRF routes)
+        return FallThroughToDRF()
     except Exception as e:
         import traceback
         return JsonResponse({'error': str(e), 'traceback': traceback.format_exc()}, status=500)
 
 async def auth_api_handler(request):
     """Async handler for auth BoltAPI"""
-    from django_bolt.responses import JSON
-    
     path_info = request.path_info
-    method = request.method.lower()
+    method = request.method.upper()
     api_path = path_info.replace('/api/auth', '', 1) or '/'
+    # Remove trailing slash for matching (Bolt routes don't have trailing slashes)
+    if api_path != '/' and api_path.endswith('/'):
+        api_path = api_path[:-1]
     
     try:
         routes = auth_api.api._routes
-        route_key = (method, api_path)
         
-        if route_key in routes:
-            handler = routes[route_key]
-            result = await handler(request)
+        # Try to find matching route
+        for route_method, route_path, _, handler in routes:
+            if route_method != method:
+                continue
+            
+            path_params = None
+            
+            # Try exact match first
+            if route_path == api_path:
+                pass  # No path params
+            # Try pattern matching for path parameters
+            elif '{' in route_path:
+                pattern = route_path.replace('{', '(?P<').replace('}', '>[^/]+)')
+                match = re.match(f'^{pattern}$', api_path)
+                if not match:
+                    continue  # Pattern doesn't match
+                
+                # Extract path parameters
+                params = match.groupdict()
+                if params:
+                    sig = inspect.signature(handler)
+                    path_params = {}
+                    for param_name, param_value in params.items():
+                        if param_name in sig.parameters:
+                            param_type = sig.parameters[param_name].annotation
+                            if param_type == int:
+                                path_params[param_name] = int(param_value)
+                            elif param_type == float:
+                                path_params[param_name] = float(param_value)
+                            else:
+                                path_params[param_name] = param_value
+            else:
+                continue  # No match
+            
+            # Extract all parameters (path + query + body)
+            bound_params = extract_handler_params(handler, request, path_params)
+            
+            # Call handler with bound parameters
+            result = await handler(**bound_params)
+            
             if isinstance(result, dict):
                 return JsonResponse(result)
             elif hasattr(result, 'to_response'):
@@ -83,19 +235,7 @@ async def auth_api_handler(request):
             else:
                 return JsonResponse({'data': result})
         
-        # Try pattern matching
-        for (route_method, route_path), handler in routes.items():
-            if route_method == method:
-                if route_path == api_path or (route_path.endswith('}') and api_path.startswith(route_path.split('{')[0])):
-                    result = await handler(request)
-                    if isinstance(result, dict):
-                        return JsonResponse(result)
-                    elif hasattr(result, 'to_response'):
-                        return result.to_response()
-                    else:
-                        return JsonResponse({'data': result})
-        
-        return JsonResponse({'error': 'Not found'}, status=404)
+        return JsonResponse({'error': 'Not found', 'path': api_path, 'method': method}, status=404)
     except Exception as e:
         import traceback
         return JsonResponse({'error': str(e), 'traceback': traceback.format_exc()}, status=500)
@@ -104,18 +244,130 @@ async def auth_api_handler(request):
 @csrf_exempt
 def blog_api_view(request):
     """Sync wrapper for blog API async handler"""
-    return async_to_sync(blog_api_handler)(request)
+    try:
+        result = async_to_sync(blog_api_handler)(request)
+        # If handler returns FallThroughToDRF, it means no route matched - let Django try other patterns
+        if isinstance(result, FallThroughToDRF):
+            raise Http404("Route not found in Bolt API")
+        return result
+    except Http404:
+        # Re-raise Http404 to let Django try other URL patterns
+        raise
+    except Exception as e:
+        # For other exceptions, return error response
+        import traceback
+        return JsonResponse({'error': str(e), 'traceback': traceback.format_exc()}, status=500)
 
 @csrf_exempt
 def auth_api_view(request):
     """Sync wrapper for auth API async handler"""
     return async_to_sync(auth_api_handler)(request)
 
-# Mount Bolt APIs using regex patterns to catch all routes
-urlpatterns = [
-    # Mount blog API at /api/
-    re_path(r'^api/.*$', blog_api_view),
-    # Mount auth API at /api/auth/
-    re_path(r'^api/auth/.*$', auth_api_view),
-]
+async def clouddiary_api_handler(request):
+    """Async handler for CloudDiary BoltAPI"""
+    path_info = request.path_info
+    method = request.method.upper()
+    api_path = path_info.replace('/api/clouddiary', '', 1) or '/'
+    # Remove trailing slash for matching
+    if api_path != '/' and api_path.endswith('/'):
+        api_path = api_path[:-1]
+    
+    try:
+        routes = clouddiary_api.api._routes
+        
+        matched = False
+        for route_method, route_path, _, handler in routes:
+            if route_method != method:
+                continue
+            
+            path_params = None
+            
+            if route_path == api_path:
+                matched = True
+            elif '{' in route_path:
+                pattern = route_path.replace('{', '(?P<').replace('}', '>[^/]+)')
+                match = re.match(f'^{pattern}$', api_path)
+                if match:
+                    matched = True
+                    params = match.groupdict()
+                    if params:
+                        sig = inspect.signature(handler)
+                        path_params = {}
+                        for param_name, param_value in params.items():
+                            if param_name in sig.parameters:
+                                param_type = sig.parameters[param_name].annotation
+                                if param_type == int:
+                                    path_params[param_name] = int(param_value)
+                                elif param_type == float:
+                                    path_params[param_name] = float(param_value)
+                                else:
+                                    path_params[param_name] = param_value
+                else:
+                    continue
+            else:
+                continue
+            
+            if matched:
+                bound_params = extract_handler_params(handler, request, path_params)
+                result = await handler(**bound_params)
+                
+                if isinstance(result, dict):
+                    return JsonResponse(result)
+                elif hasattr(result, 'to_response'):
+                    return result.to_response()
+                else:
+                    return JsonResponse({'data': result})
+        
+        return FallThroughToDRF()
+    except Exception as e:
+        import traceback
+        return JsonResponse({'error': str(e), 'traceback': traceback.format_exc()}, status=500)
 
+@csrf_exempt
+def clouddiary_api_view(request):
+    """Sync wrapper for CloudDiary API async handler"""
+    try:
+        result = async_to_sync(clouddiary_api_handler)(request)
+        if isinstance(result, FallThroughToDRF):
+            raise Http404("Route not found in Bolt API")
+        return result
+    except Http404:
+        raise
+    except Exception as e:
+        import traceback
+        return JsonResponse({'error': str(e), 'traceback': traceback.format_exc()}, status=500)
+
+# Swagger/OpenAPI documentation endpoints
+# Use BoltAPI.view() to create Swagger UI endpoint
+from blog import bolt_api as blog_api
+
+@csrf_exempt
+def swagger_ui(request):
+    """Swagger UI for API documentation"""
+    # BoltAPI.view() handles OpenAPI/Swagger UI routes automatically
+    # It will serve Swagger UI at /docs/ or /openapi.json based on the request path
+    return async_to_sync(blog_api.api.view)(request)
+
+@csrf_exempt
+def openapi_schema(request):
+    """OpenAPI schema JSON endpoint"""
+    schema = blog_api.api._get_openapi_schema()
+    return JsonResponse(schema)
+
+# Mount Bolt APIs using regex patterns to catch all routes
+# IMPORTANT: More specific patterns must come first
+urlpatterns = [
+    # Swagger/OpenAPI documentation
+    # BoltAPI automatically serves OpenAPI at /schema (configured in OpenAPIConfig)
+    path('api/docs/', swagger_ui, name='swagger-ui'),
+    path('api/openapi.json', openapi_schema, name='openapi-schema'),
+    path('api/schema', async_to_sync(blog_api.api.view), name='openapi-schema-bolt'),
+    
+    # Mount CloudDiary API at /api/clouddiary/ (most specific)
+    re_path(r'^api/clouddiary/.*$', clouddiary_api_view),
+    # Mount auth API at /api/auth/ (more specific, must come before blog)
+    re_path(r'^api/auth/.*$', auth_api_view),
+    # Mount blog API at /api/ (less specific, comes after auth and clouddiary)
+    # This will also handle OpenAPI routes registered by BoltAPI
+    re_path(r'^api/.*$', blog_api_view),
+]

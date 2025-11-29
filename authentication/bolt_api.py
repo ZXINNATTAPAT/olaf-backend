@@ -10,13 +10,25 @@ from django.contrib.auth import authenticate
 from django.conf import settings
 from django.middleware import csrf
 from rest_framework_simplejwt import tokens
+from asgiref.sync import sync_to_async
 from . import models, services, serializers as auth_serializers
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Initialize Bolt API
-api = BoltAPI()
+# Wrap synchronous functions for async use
+async_authenticate = sync_to_async(authenticate, thread_sensitive=False)
+
+# Initialize Bolt API with OpenAPI/Swagger configuration
+from django_bolt import OpenAPIConfig
+
+api = BoltAPI(
+    openapi_config=OpenAPIConfig(
+        title="Olaf Backend API - Authentication",
+        version="1.0.0",
+        description="Authentication endpoints for Olaf platform",
+    ),
+)
 
 # Serializers
 class LoginSerializer(Serializer):
@@ -37,7 +49,8 @@ class RegistrationSerializer(Serializer):
 async def login(data: LoginSerializer):
     """User login endpoint"""
     try:
-        user = authenticate(email=data.email, password=data.password)
+        # Use async_authenticate wrapper
+        user = await async_authenticate(email=data.email, password=data.password)
         
         if user is None or not user.is_active:
             logger.warning(f"Login failed for email: {data.email}")
@@ -46,17 +59,21 @@ async def login(data: LoginSerializer):
                 status_code=401
             )
         
-        # Generate tokens
-        token_data = services.get_user_tokens(user)
+        # Generate tokens (synchronous function, wrap it)
+        token_data = await sync_to_async(services.get_user_tokens)(user)
         logger.info(f"🔑 Generated tokens for user {user.email}")
         
-        # Get user data
-        user_serializer = auth_serializers.AccountSerializer(user)
+        # Get user data (serializer is synchronous)
+        def get_user_data():
+            serializer = auth_serializers.AccountSerializer(user)
+            return serializer.data
+        
+        user_data = await sync_to_async(get_user_data)()
         
         # Create response
         response_data = {
             "message": "Login successful",
-            "user": user_serializer.data
+            "user": user_data
         }
         
         # Note: Cookie setting will need to be handled in middleware or response handler
@@ -82,29 +99,36 @@ async def register(data: RegistrationSerializer):
                 status_code=400
             )
         
-        # Create user
-        serializer = auth_serializers.RegistrationSerializer(data=data.to_dict())
-        if not serializer.is_valid():
-            return JSON(
-                {"error": "Validation failed", "details": serializer.errors},
-                status_code=400
-            )
+        # Create user (serializer operations are synchronous)
+        data_dict = data.to_dict()
         
-        user = serializer.save()
+        def create_user():
+            serializer = auth_serializers.RegistrationSerializer(data=data_dict)
+            if not serializer.is_valid():
+                return None, serializer.errors
+            user = serializer.save()
+            return user, None
+        
+        user, errors = await sync_to_async(create_user)()
         
         if user is None:
             return JSON(
-                {"error": "Failed to create user"},
+                {"error": "Validation failed", "details": errors},
                 status_code=400
             )
         
         # Auto-login after registration
-        token_data = services.get_user_tokens(user)
-        user_serializer = auth_serializers.AccountSerializer(user)
+        token_data = await sync_to_async(services.get_user_tokens)(user)
+        
+        def get_user_data():
+            serializer = auth_serializers.AccountSerializer(user)
+            return serializer.data
+        
+        user_data = await sync_to_async(get_user_data)()
         
         response_data = {
             "message": "User registered successfully!",
-            "user": user_serializer.data
+            "user": user_data
         }
         
         return response_data
@@ -155,4 +179,59 @@ async def get_csrf_token():
         "message": "CSRF token available",
         "csrfToken": "token_here"  # TODO: Generate actual token
     }
+
+@api.post("/refresh-token")
+async def refresh_token(request):
+    """Refresh JWT access token using refresh token"""
+    from rest_framework_simplejwt import tokens, exceptions as jwt_exceptions
+    from django.conf import settings
+    
+    try:
+        # Get refresh token from cookie or request body
+        refresh_token_value = None
+        
+        # Try to get from request body (BoltAPI may need to extract from request)
+        # For now, we'll need to get it from the request object
+        # Note: BoltAPI handlers receive request as parameter if needed
+        if hasattr(request, 'COOKIES'):
+            refresh_token_value = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'])
+        
+        if not refresh_token_value:
+            return JSON(
+                {"error": "No valid refresh token found. Please provide refresh token in cookie."},
+                status_code=401
+            )
+        
+        # Validate and refresh token
+        def refresh_token_sync():
+            try:
+                refresh = tokens.RefreshToken(refresh_token_value)
+                access_token = str(refresh.access_token)
+                # Optionally rotate refresh token
+                new_refresh_token = str(refresh)
+                return access_token, new_refresh_token
+            except Exception as e:
+                raise jwt_exceptions.InvalidToken(f"Invalid refresh token: {str(e)}")
+        
+        access_token, new_refresh_token = await sync_to_async(refresh_token_sync)()
+        
+        # Return new tokens
+        # Note: Cookie setting will need to be handled in middleware or response handler
+        return {
+            "access": access_token,
+            "refresh": new_refresh_token,
+            "message": "Token refreshed successfully"
+        }
+        
+    except jwt_exceptions.InvalidToken as e:
+        return JSON(
+            {"error": str(e)},
+            status_code=401
+        )
+    except Exception as e:
+        logger.error(f"Refresh token error: {str(e)}", exc_info=True)
+        return JSON(
+            {"error": "An error occurred during token refresh. Please try again."},
+            status_code=500
+        )
 

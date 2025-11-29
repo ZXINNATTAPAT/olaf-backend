@@ -3,7 +3,8 @@ from rest_framework import routers
 from .views import (
     UserViewSet, PostViewSet, CommentViewSet, PostLikeViewSet, CommentLikeViewSet,
     upload_post_image, get_post_images, get_post_primary_image, 
-    set_post_primary_image, delete_post_image, add_post_image_path, create_post_with_image
+    set_post_primary_image, delete_post_image, add_post_image_path, create_post_with_image,
+    post_feed
 )
 
 router = routers.DefaultRouter()
@@ -15,6 +16,7 @@ router.register(r'commentlikes', CommentLikeViewSet)
 
 urlpatterns = [
     # Custom endpoints (must come before router.urls)
+    path('posts/feed/', post_feed, name='post-feed'),  # Feed endpoint without post_text and comments
     path('posts/create-with-image/', create_post_with_image, name='create-post-with-image'),
     path('posts/<int:post_id>/upload-image/', upload_post_image, name='upload-post-image'),
     path('posts/<int:post_id>/add-image-path/', add_post_image_path, name='add-post-image-path'),

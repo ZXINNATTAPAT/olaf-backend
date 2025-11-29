@@ -35,7 +35,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6('
+# Use environment variable in production, fallback to insecure key for development only
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Default to True for development, set DEBUG=False in production via environment variable
@@ -57,7 +58,8 @@ if os.getenv('ALLOWED_HOST'):
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # Django Admin removed - using Swagger/OpenAPI documentation instead
+    # 'django.contrib.admin',  # Removed - use /api/docs/ for API documentation
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -67,7 +69,7 @@ INSTALLED_APPS = [
     'rest_framework',
     "corsheaders",
     'rest_framework_simplejwt.token_blacklist',
-    'django_bolt',  # Django-Bolt API framework
+    'django_bolt',  # Django-Bolt API framework (includes Swagger/OpenAPI)
     'cloudinary',
     "blog",
     "authentication",
