@@ -174,7 +174,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-USE_I18N = False  # Disabled - API-only app doesn't need i18n (saves ~10-20MB)
+USE_I18N = True  # Keep enabled - Django requires locale files even if not using translations
 USE_L10N = False  # Disabled - no localization needed
 
 USE_TZ = True

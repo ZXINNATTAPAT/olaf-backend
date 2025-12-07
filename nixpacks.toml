@@ -10,7 +10,9 @@ cmds = [
   # Install Python packages
   "bash -c 'source $HOME/.cargo/env && export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt'",
   # Clean up Rust toolchain after building django-bolt (saves ~800MB-1GB)
+  # Also clean up profile scripts that reference cargo to avoid warnings
   "rm -rf $HOME/.rustup $HOME/.cargo /root/.rustup /root/.cargo 2>/dev/null || true",
+  "sed -i '/cargo\/env/d' /root/.profile /root/.bashrc /root/.bash_profile 2>/dev/null || true",
   # Clean up pip cache and build artifacts
   "rm -rf /root/.cache/pip /tmp/pip-* /tmp/build /tmp/*.whl 2>/dev/null || true",
   # Clean up Python bytecode and __pycache__
@@ -22,8 +24,10 @@ cmds = [
   "find /opt/venv -type d -name 'test' -exec rm -r {} + 2>/dev/null || true",
   "find /opt/venv -name '*.md' -delete 2>/dev/null || true",
   "find /opt/venv -name '*.txt' -path '*/tests/*' -delete 2>/dev/null || true",
-  # Clean up locale files if not using i18n (saves ~10-20MB)
-  "find /opt/venv -type d -name 'locale' -not -path '*/site-packages/django/contrib/admin/locale*' -exec rm -r {} + 2>/dev/null || true",
+  # Clean up locale files from non-Django packages (saves ~5-10MB)
+  # IMPORTANT: Never remove Django's locale files - Django requires them even if USE_I18N=False
+  # Only remove locale files from other packages that don't need them
+  "find /opt/venv -type d -name 'locale' -path '*/site-packages/*' -not -path '*/site-packages/django/*' -exec rm -r {} + 2>/dev/null || true",
   # Clean up example and sample files
   "find /opt/venv -name '*.example' -delete 2>/dev/null || true",
   "find /opt/venv -name '*.sample' -delete 2>/dev/null || true",
