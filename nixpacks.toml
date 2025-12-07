@@ -20,10 +20,12 @@ cmds = [
   "find /opt/venv -name '*.pyc' -delete 2>/dev/null || true",
   "find /opt/venv -name '*.pyo' -delete 2>/dev/null || true",
   # Clean up documentation and test files from packages
-  "find /opt/venv -type d -name 'tests' -exec rm -r {} + 2>/dev/null || true",
-  "find /opt/venv -type d -name 'test' -exec rm -r {} + 2>/dev/null || true",
+  # IMPORTANT: Never remove Django's test module - it's required by rest_framework_simplejwt and other packages
+  # Only remove test directories from non-Django packages
+  "find /opt/venv -type d -name 'tests' -path '*/site-packages/*' -not -path '*/site-packages/django/*' -not -path '*/site-packages/django/test*' -exec rm -r {} + 2>/dev/null || true",
+  "find /opt/venv -type d -name 'test' -path '*/site-packages/*' -not -path '*/site-packages/django/*' -not -path '*/site-packages/django/test*' -exec rm -r {} + 2>/dev/null || true",
   "find /opt/venv -name '*.md' -delete 2>/dev/null || true",
-  "find /opt/venv -name '*.txt' -path '*/tests/*' -delete 2>/dev/null || true",
+  "find /opt/venv -name '*.txt' -path '*/tests/*' -not -path '*/site-packages/django/*' -delete 2>/dev/null || true",
   # Clean up locale files from non-Django packages (saves ~5-10MB)
   # IMPORTANT: Never remove Django's locale files - Django requires them even if USE_I18N=False
   # Only remove locale files from other packages that don't need them
