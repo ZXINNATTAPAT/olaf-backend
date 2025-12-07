@@ -6,6 +6,7 @@ from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from .models import  Post, Comment, PostLike, CommentLike
 from authentication.models import Account
 from .serializers import UserSerializer, PostSerializer, PostFeedSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
@@ -184,10 +185,12 @@ def add_post_image_path(request, post_id):
     return add_image_path_to_object(request, content_type.id, post_id)
 
 @api_view(['GET'])
-@authentication_classes([CustomAuthentication])
-@permission_classes([permissions.AllowAny])
+@csrf_exempt
+@authentication_classes([])  # No authentication required
+@permission_classes([permissions.AllowAny])  # Allow any user (including anonymous)
 def post_feed(request):
-    """Get posts feed - lightweight version without post_text and comments"""
+    """Get posts feed - lightweight version without post_text and comments
+    This endpoint does not require CSRF token or authentication."""
     from rest_framework.pagination import PageNumberPagination
     
     # Get pagination parameters
