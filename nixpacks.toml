@@ -3,8 +3,15 @@ nixPkgs = ["python310", "curl", "gcc"]
 
 [phases.install]
 cmds = [
-  "python -m venv --copies /opt/venv",
-  "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
-  "bash -c 'source $HOME/.cargo/env && export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && rustc --version && cargo --version && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install -r requirements.txt'"
+  # Use symlinks instead of copies to save space (~50% smaller venv)
+  "python -m venv /opt/venv",
+  # Install Rust toolchain (required for django-bolt)
+  "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal",
+  # Install Python packages
+  "bash -c 'source $HOME/.cargo/env && export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt'",
+  # Clean up Rust toolchain after building django-bolt (saves ~800MB-1GB)
+  "rm -rf $HOME/.rustup $HOME/.cargo /root/.rustup /root/.cargo 2>/dev/null || true",
+  # Clean up pip cache
+  "rm -rf /root/.cache/pip /tmp/pip-* 2>/dev/null || true"
 ]
 
