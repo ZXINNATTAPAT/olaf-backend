@@ -12,7 +12,7 @@ cmds = [
   # Clean up Rust toolchain after building django-bolt (saves ~800MB-1GB)
   # Also clean up profile scripts that reference cargo to avoid warnings
   "rm -rf $HOME/.rustup $HOME/.cargo /root/.rustup /root/.cargo 2>/dev/null || true",
-  "sed -i '/cargo\/env/d' /root/.profile /root/.bashrc /root/.bash_profile 2>/dev/null || true",
+  "sed -i \"s|.*cargo/env.*||g\" /root/.profile /root/.bashrc /root/.bash_profile 2>/dev/null || true",
   # Clean up pip cache and build artifacts
   "rm -rf /root/.cache/pip /tmp/pip-* /tmp/build /tmp/*.whl 2>/dev/null || true",
   # Clean up Python bytecode and __pycache__
