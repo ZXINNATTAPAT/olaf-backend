@@ -27,4 +27,4 @@ urlpatterns = [
     # These come after Bolt patterns, so Bolt routes take precedence
     path('api/', include('blog.urls')),  
     path('api/auth/',include('authentication.urls' ,namespace='authentication')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + (static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) if settings.ENABLE_STATIC_FILES else [])

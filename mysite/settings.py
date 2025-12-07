@@ -24,12 +24,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = 'static/'
-# Empty static directory - no custom static files
-STATICFILES_DIRS = []  # Removed empty static directory
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -40,6 +34,16 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-msu85(n(%fr(h9*vcn(3asho7q
 # SECURITY WARNING: don't run with debug turned on in production!
 # Default to True for development, set DEBUG=False in production via environment variable
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+# Static files configuration
+# In production, disable static files to reduce build size (Django-Bolt Swagger UI uses JSON only)
+ENABLE_STATIC_FILES = os.getenv('ENABLE_STATIC_FILES', 'False' if not DEBUG else 'True') == 'True'
+
+STATIC_URL = 'static/'
+# Empty static directory - no custom static files
+STATICFILES_DIRS = []  # Removed empty static directory
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' if ENABLE_STATIC_FILES else None
 
 # ALLOWED_HOSTS configuration
 ALLOWED_HOSTS = [
@@ -63,7 +67,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',  # Required for CSRF token storage
     # 'django.contrib.messages',  # Removed - not used in API-only app
-    'django.contrib.staticfiles',
+    # Conditionally include staticfiles (disabled in production to reduce build size)
+    *(['django.contrib.staticfiles'] if ENABLE_STATIC_FILES else []),
 
     'rest_framework',
     "corsheaders",
@@ -79,7 +84,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Conditionally include WhiteNoise (disabled in production to reduce build size)
+    *(["whitenoise.middleware.WhiteNoiseMiddleware"] if ENABLE_STATIC_FILES else []),
     'django.contrib.sessions.middleware.SessionMiddleware',  # Required for CSRF
     'mysite.middleware.CustomCommonMiddleware',  # Custom CommonMiddleware to prevent API redirect loops
     'django.middleware.csrf.CsrfViewMiddleware',

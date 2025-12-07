@@ -31,6 +31,9 @@ cmds = [
   "find /opt/venv -type d -name '.git' -exec rm -r {} + 2>/dev/null || true",
   # Clean up unnecessary static files (keep only essential for Swagger/DRF)
   "find /opt/venv -path '*/rest_framework/static/rest_framework/css/*' ! -name 'bootstrap*' -delete 2>/dev/null || true",
-  "find /opt/venv -path '*/rest_framework/static/rest_framework/js/*' ! -name '*.min.js' -delete 2>/dev/null || true"
+  "find /opt/venv -path '*/rest_framework/static/rest_framework/js/*' ! -name '*.min.js' -delete 2>/dev/null || true",
+  # In production, remove staticfiles directory after build (if ENABLE_STATIC_FILES is False)
+  # This is handled by environment variable - staticfiles won't be collected if disabled
+  "rm -rf /app/staticfiles 2>/dev/null || true"
 ]
 
