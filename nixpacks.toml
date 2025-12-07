@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["python310", "curl", "gcc"]
+nixPkgs = ["python311", "curl", "gcc"]
 
 [phases.install]
 cmds = [
@@ -11,7 +11,26 @@ cmds = [
   "bash -c 'source $HOME/.cargo/env && export PATH=\"$HOME/.cargo/bin:/opt/venv/bin:$PATH\" && /opt/venv/bin/pip install --upgrade pip && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt'",
   # Clean up Rust toolchain after building django-bolt (saves ~800MB-1GB)
   "rm -rf $HOME/.rustup $HOME/.cargo /root/.rustup /root/.cargo 2>/dev/null || true",
-  # Clean up pip cache
-  "rm -rf /root/.cache/pip /tmp/pip-* 2>/dev/null || true"
+  # Clean up pip cache and build artifacts
+  "rm -rf /root/.cache/pip /tmp/pip-* /tmp/build /tmp/*.whl 2>/dev/null || true",
+  # Clean up Python bytecode and __pycache__
+  "find /opt/venv -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true",
+  "find /opt/venv -name '*.pyc' -delete 2>/dev/null || true",
+  "find /opt/venv -name '*.pyo' -delete 2>/dev/null || true",
+  # Clean up documentation and test files from packages
+  "find /opt/venv -type d -name 'tests' -exec rm -r {} + 2>/dev/null || true",
+  "find /opt/venv -type d -name 'test' -exec rm -r {} + 2>/dev/null || true",
+  "find /opt/venv -name '*.md' -delete 2>/dev/null || true",
+  "find /opt/venv -name '*.txt' -path '*/tests/*' -delete 2>/dev/null || true",
+  # Clean up locale files if not using i18n (saves ~10-20MB)
+  "find /opt/venv -type d -name 'locale' -not -path '*/site-packages/django/contrib/admin/locale*' -exec rm -r {} + 2>/dev/null || true",
+  # Clean up example and sample files
+  "find /opt/venv -name '*.example' -delete 2>/dev/null || true",
+  "find /opt/venv -name '*.sample' -delete 2>/dev/null || true",
+  # Clean up .git directories from packages
+  "find /opt/venv -type d -name '.git' -exec rm -r {} + 2>/dev/null || true",
+  # Clean up unnecessary static files (keep only essential for Swagger/DRF)
+  "find /opt/venv -path '*/rest_framework/static/rest_framework/css/*' ! -name 'bootstrap*' -delete 2>/dev/null || true",
+  "find /opt/venv -path '*/rest_framework/static/rest_framework/js/*' ! -name '*.min.js' -delete 2>/dev/null || true"
 ]
 

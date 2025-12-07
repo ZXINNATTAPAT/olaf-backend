@@ -25,9 +25,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+# Empty static directory - no custom static files
+STATICFILES_DIRS = []  # Removed empty static directory
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -62,8 +61,8 @@ INSTALLED_APPS = [
     # 'django.contrib.admin',  # Removed - use /api/docs/ for API documentation
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.sessions',  # Required for CSRF token storage
+    # 'django.contrib.messages',  # Removed - not used in API-only app
     'django.contrib.staticfiles',
 
     'rest_framework',
@@ -81,11 +80,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Required for CSRF
     'mysite.middleware.CustomCommonMiddleware',  # Custom CommonMiddleware to prevent API redirect loops
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    # 'django.contrib.messages.middleware.MessageMiddleware',  # Removed - not used
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -104,7 +103,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                # 'django.contrib.messages.context_processors.messages',  # Removed - not used
             ],
         },
     },
@@ -169,7 +168,8 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-USE_I18N = True
+USE_I18N = False  # Disabled - API-only app doesn't need i18n (saves ~10-20MB)
+USE_L10N = False  # Disabled - no localization needed
 
 USE_TZ = True
 
