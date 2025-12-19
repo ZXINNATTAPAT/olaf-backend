@@ -13,6 +13,7 @@ import re
 import inspect
 import json
 from typing import get_origin, get_args, Union
+from django_bolt.responses import JSON
 
 # Special marker class to indicate route should fall through to DRF
 class FallThroughToDRF:
@@ -233,7 +234,24 @@ async def auth_api_handler(request):
             # Call handler with bound parameters
             result = await handler(**bound_params)
             
-            if isinstance(result, dict):
+            if isinstance(result, JSON):
+                # Handle Bolt JSON response object explicitly
+                # It has .body (or .data/content depending on impl) and .status_code
+                # Based on usage in bolt_api.py: JSON(data, status_code=...)
+                # It likely stores data in a way that we can extract or invalidating JsonResponse
+                # Assuming it has a way to get dict content. If it's the class from django_bolt,
+                # we should check its attributes.
+                # Usually .body or ._content. msgspec structs/json usually need serialization.
+                # Safest is to try getattr.
+                data = getattr(result, 'body', getattr(result, 'content', None))
+                # If body/content is bytes/string, parse it? No, JSON() usually takes dict.
+                # Let's assume it behaves like a response holder.
+                # If result is not serializable, we should look at its structure.
+                # For now, let's assume result itself is not the dict, but result.body is.
+                # But wait, looking at bolt_api.py: JSON({"error":...}, status_code=400)
+                # It passes dict as first arg.
+                return JsonResponse(result.body if hasattr(result, 'body') else result, status=result.status_code, safe=False)
+            elif isinstance(result, dict):
                 return JsonResponse(result)
             elif hasattr(result, 'to_response'):
                 return result.to_response()

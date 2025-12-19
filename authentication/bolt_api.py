@@ -13,6 +13,7 @@ from rest_framework_simplejwt import tokens
 from asgiref.sync import sync_to_async
 from . import models, services, serializers as auth_serializers
 import logging
+import msgspec
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,8 @@ async def register(data: RegistrationSerializer):
             )
         
         # Create user (serializer operations are synchronous)
-        data_dict = data.to_dict()
+        # data is a msgspec.Struct, use asdict to convert
+        data_dict = msgspec.structs.asdict(data)
         
         def create_user():
             serializer = auth_serializers.RegistrationSerializer(data=data_dict)
