@@ -100,6 +100,7 @@ class PostFeedSerializer(serializers.ModelSerializer):
     primary_image = serializers.SerializerMethodField()
     primary_image_url = serializers.SerializerMethodField()
     image_count = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -111,21 +112,40 @@ class PostFeedSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['post_id', 'post_datetime']
 
+    def get_like_count(self, obj):
+        return getattr(obj, 'annotated_like_count', obj.likes.count())
+
     def get_comment_count(self, obj):
-        return obj.comments.count()
+        return getattr(obj, 'annotated_comment_count', obj.comments.count())
     
+    def get_image_count(self, obj):
+        return getattr(obj, 'annotated_image_count', obj.images.count())
+
+    def _get_primary_image_obj(self, obj):
+        """Helper to get primary image from prefetched list"""
+        if hasattr(obj, '_prefetched_objects_cache') and 'images' in obj._prefetched_objects_cache:
+            # Use prefetch cache
+            images = obj.images.all()
+            return next((img for img in images if img.is_primary), None)
+        # Fallback to model property (hits DB if not prefetched)
+        return obj.primary_image
+
     def get_image_url(self, obj):
         # Use primary image URL from shared images, fallback to old image field
-        return obj.primary_image_url
+        return self.get_primary_image_url(obj)
     
     def get_image_secure_url(self, obj):
         # Use primary image secure URL from shared images, fallback to old image field
-        primary = obj.primary_image
+        primary = self._get_primary_image_obj(obj)
         if primary:
             return primary.image_secure_url
         return obj.image_secure_url
     
     def get_liked(self, obj):
+        # Use annotated value if available
+        if hasattr(obj, 'is_liked'):
+            return obj.is_liked
+            
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.likes.filter(user=request.user).exists()
@@ -133,15 +153,17 @@ class PostFeedSerializer(serializers.ModelSerializer):
     
     def get_primary_image(self, obj):
         """Return the primary shared image"""
-        primary = obj.primary_image
+        primary = self._get_primary_image_obj(obj)
         if primary:
             return SharedImageSerializer(primary).data
         return None
     
     def get_primary_image_url(self, obj):
         """Return the URL of the primary shared image"""
-        return obj.primary_image_url
-    
-    def get_image_count(self, obj):
-        """Return the count of shared images"""
-        return obj.image_count
+        primary = self._get_primary_image_obj(obj)
+        if primary:
+            return primary.image_url
+        # Fallback to old image field logic (if primary is None)
+        if obj.image:
+             return obj.image.url
+        return None

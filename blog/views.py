@@ -192,15 +192,31 @@ def post_feed(request):
     """Get posts feed - lightweight version without post_text and comments
     This endpoint does not require CSRF token or authentication."""
     from rest_framework.pagination import PageNumberPagination
+    from django.db.models import Count, OuterRef, Exists
+    from .models import PostLike
     
     # Get pagination parameters
     page = int(request.query_params.get('page', 1))
     page_size = int(request.query_params.get('page_size', 20))
     
     # Get queryset
+    # Optimize: Remove 'likes__user' prefetch as it's expensive and likely unused by FeedSerializer
+    # Add annotations for counts to avoid N+1 queries
     queryset = Post.objects.select_related('user').prefetch_related(
-        'likes__user', 'images'
+        'images'
+    ).annotate(
+        annotated_like_count=Count('likes', distinct=True),
+        annotated_comment_count=Count('comments', distinct=True),
+        annotated_image_count=Count('images', distinct=True)
     ).order_by('-post_datetime')
+    
+    # Annotate is_liked if user is authenticated
+    if request.user.is_authenticated:
+        is_liked = PostLike.objects.filter(
+            post=OuterRef('pk'),
+            user=request.user
+        )
+        queryset = queryset.annotate(is_liked=Exists(is_liked))
     
     # Manual pagination
     paginator = PageNumberPagination()
@@ -210,7 +226,7 @@ def post_feed(request):
     
     page_obj = paginator.paginate_queryset(queryset, request)
     
-    # Serialize with PostFeedSerializer (no post_text, no comments)
+    # Serialize with PostFeedSerializer
     serializer = PostFeedSerializer(page_obj, many=True, context={'request': request})
     
     return paginator.get_paginated_response(serializer.data)
