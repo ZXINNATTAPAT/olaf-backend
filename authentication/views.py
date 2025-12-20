@@ -289,6 +289,12 @@ def user(request):
         serializer = serializers.AccountSerializer(request.user)
         return response.Response(serializer.data, status=status.HTTP_200_OK)
         
+    except (jwt_exceptions.InvalidToken, jwt_exceptions.AuthenticationFailed) as e:
+        logger.warning(f"Authentication failed: {str(e)}")
+        return response.Response(
+            {"error": "Invalid token", "code": "token_not_valid"}, 
+            status=status.HTTP_401_UNAUTHORIZED
+        )
     except Exception as e:
         logger.error(f"Get user error: {str(e)}", exc_info=True)
         return response.Response(
