@@ -404,5 +404,6 @@ urlpatterns = [
     # re_path(r'^api/auth/.*$', auth_api_view),
     # Mount blog API at /api/ (less specific, comes after auth and clouddiary)
     # This will also handle OpenAPI routes registered by BoltAPI
-    re_path(r'^api/.*$', blog_api_view),
+    # Exclude /api/auth/ so it falls through to DRF implemented in urls.py
+    re_path(r'^api/(?!auth/).*$', blog_api_view),
 ]
