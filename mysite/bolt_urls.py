@@ -400,7 +400,8 @@ urlpatterns = [
     # Mount CloudDiary API at /api/clouddiary/ (most specific)
     re_path(r'^api/clouddiary/.*$', clouddiary_api_view),
     # Mount auth API at /api/auth/ (more specific, must come before blog)
-    re_path(r'^api/auth/.*$', auth_api_view),
+    # Disabled to ensure DRF handles auth (Login/Refresh with Cookies)
+    # re_path(r'^api/auth/.*$', auth_api_view),
     # Mount blog API at /api/ (less specific, comes after auth and clouddiary)
     # This will also handle OpenAPI routes registered by BoltAPI
     re_path(r'^api/.*$', blog_api_view),

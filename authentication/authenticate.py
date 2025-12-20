@@ -83,12 +83,20 @@ class CustomAuthentication(jwt_authentication.JWTAuthentication):
         if user:
             return user
 
-        # If not in cache, fetch from DB
-        user = super().get_user(validated_token)
-        
-        # Cache the user object for 60 seconds
-        # This significantly reduces DB hits for sequential requests
-        cache.set(cache_key, user, timeout=60)
-        
-        return user
+        try:
+            # If not in cache, fetch from DB
+            user = super().get_user(validated_token)
+            
+            # Cache the user object for 60 seconds
+            # This significantly reduces DB hits for sequential requests
+            cache.set(cache_key, user, timeout=60)
+            
+            return user
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error getting user from token: {str(e)}")
+            # Raise AuthenticationFailed to result in 401 instead of 500
+            from rest_framework_simplejwt.exceptions import InvalidToken, AuthenticationFailed
+            raise AuthenticationFailed("User not found or invalid token", code="user_not_found")
         
