@@ -37,11 +37,29 @@ def set_auth_cookies(response, access_token, refresh_token=None):
         # Use None for cross-origin - cookies will be sent with withCredentials:true and SameSite=None
         cookie_domain = None
     
-    # Determine SameSite value - use None for cross-origin (production), Lax for same-origin (dev)
-    # Try without SameSite attribute to see if it helps with cookie sending
-    samesite = None  # Don't set SameSite attribute - let browser handle it
-    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+    # Determine SameSite value
+    # For cross-origin (Frontend -> Backend on different domains), we MUST use SameSite='None'
+    # And when SameSite='None', Secure MUST be True.
+    # If DEBUG is True (Localhost), we can use 'Lax' or 'None' (but 'None' requires Secure=True on some browsers, or special localhost handling)
+    # The safest bet for cross-origin (React Localhost -> Django Localhost/Railway) is SameSite='None' + Secure=True
     
+    # Force SameSite='None' to allow cross-origin cookies
+    samesite = 'None'
+    
+    # Secure must be True if SameSite='None'
+    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE']
+    if samesite == 'None' and not secure:
+        # If not secure (http), we can't use SameSite='None' in most browsers
+        # But for localhost development, it might work.
+        # Ideally, local dev should use HTTPS or different settings.
+        # Fallback for HTTP dev:
+        if settings.DEBUG:
+             # On localhost http, Chrome 80+ allows SameSite=Lax without Secure
+             samesite = 'Lax'
+        else:
+             # Production HTTP (shouldn't happen) - force Secure for None
+             secure = True
+
     # Set access token cookie
     try:
         response.set_cookie(
@@ -88,22 +106,22 @@ def clear_auth_cookies(response):
         # Use None to match set_auth_cookies
         cookie_domain = None
     
-    # Clear auth cookies (don't set SameSite when deleting)
+    # Clear auth cookies (set SameSite='None' for cross-origin deletion)
     response.delete_cookie(
         settings.SIMPLE_JWT['AUTH_COOKIE'],
         path='/',
         domain=cookie_domain,
-        samesite=None  # Don't set SameSite when deleting
+        samesite='None' 
     )
     response.delete_cookie(
         settings.SIMPLE_JWT['AUTH_COOKIE_REFRESH'],
         path='/',
         domain=cookie_domain,
-        samesite=None  # Don't set SameSite when deleting
+        samesite='None'
     )
     
-    # Clear CSRF cookies (don't set SameSite when deleting)
-    response.delete_cookie("csrftoken", path='/', domain=cookie_domain, samesite=None)
-    response.delete_cookie("X-CSRFToken", path='/', domain=cookie_domain, samesite=None)
+    # Clear CSRF cookies 
+    response.delete_cookie("csrftoken", path='/', domain=cookie_domain, samesite='None')
+    response.delete_cookie("X-CSRFToken", path='/', domain=cookie_domain, samesite='None')
     
     return response

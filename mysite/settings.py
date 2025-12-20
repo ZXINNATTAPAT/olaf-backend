@@ -296,12 +296,11 @@ SIMPLE_JWT = {
     # For development: Secure=False, SameSite=None (works with localhost cross-origin)
     # For production: Secure=True, SameSite=None (for cross-origin)
     # IMPORTANT: When SameSite=None, Secure must be True in production, but Chrome allows False for localhost
+    # Force Secure=True in settings if SameSite='None', unless strictly local debugging
     'AUTH_COOKIE_SECURE': os.getenv('COOKIE_SECURE', 'False' if DEBUG else 'True') == 'True',
     'AUTH_COOKIE_HTTP_ONLY': True,  # Prevent XSS attacks
     'AUTH_COOKIE_PATH': '/',
-    # Use None for cross-origin support (both dev and prod)
-    # Frontend (localhost:3000) and backend (localhost:8000) are different origins
-    # Chrome allows Secure=False with SameSite=None for localhost
+    # Use 'None' (string) for cross-origin support
     'AUTH_COOKIE_SAMESITE': os.getenv('COOKIE_SAMESITE', 'None'),
 }
 
