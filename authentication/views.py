@@ -37,11 +37,13 @@ def loginView(request):
         token_data = services.get_user_tokens(user)
         logger.info(f"🔑 Generated tokens for user {user.email} - Access: {len(token_data.get('access_token', ''))}, Refresh: {len(token_data.get('refresh_token', ''))}")
         
-        # Create response with user data
+        # Create response with user data AND tokens (for cross-site compatibility)
         user_serializer = serializers.AccountSerializer(user)
         res = response.Response({
             "message": "Login successful",
-            "user": user_serializer.data
+            "user": user_serializer.data,
+            "access_token": token_data["access_token"],
+            "refresh_token": token_data["refresh_token"]
         }, status=status.HTTP_200_OK)
         
         # Set authentication cookies
@@ -113,7 +115,9 @@ def registerView(request):
         
         res = response.Response({
             "message": "User registered successfully!",
-            "user": user_serializer.data
+            "user": user_serializer.data,
+            "access_token": token_data["access_token"],
+            "refresh_token": token_data["refresh_token"]
         }, status=status.HTTP_201_CREATED)
         
         # Set authentication cookies
@@ -248,20 +252,32 @@ class CookieTokenRefreshView(jwt_views.TokenRefreshView):
             if response.status_code == 200 and response.data.get("access"):
                 # Set cookies with new tokens
                 refresh_token = response.data.get("refresh")
+                access_token = response.data.get("access")
+                
+                # Store tokens for response body (for cross-site compatibility)
+                response_tokens = {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token if refresh_token else None
+                }
+                
                 if refresh_token:
                     services.set_auth_cookies(
                         response,
-                        access_token=response.data.get("access"),
+                        access_token=access_token,
                         refresh_token=refresh_token
                     )
-                    del response.data["refresh"]
                 else:
                     # If no new refresh token, just update access token
                     services.set_auth_cookies(
                         response,
-                        access_token=response.data.get("access"),
+                        access_token=access_token,
                         refresh_token=None
                     )
+                
+                # Update response data to include tokens (don't delete them)
+                response.data["access_token"] = response_tokens["access_token"]
+                if response_tokens["refresh_token"]:
+                    response.data["refresh_token"] = response_tokens["refresh_token"]
                 
                 # Update CSRF token
                 csrf_token = csrf.get_token(request)

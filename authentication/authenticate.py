@@ -17,37 +17,46 @@ class CustomAuthentication(jwt_authentication.JWTAuthentication):
         import logging
         logger = logging.getLogger(__name__)
         
-        # First try to get token from cookies (HTTP-only cookies are more secure)
-        raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+        raw_token = None
+        token_source = None
         
-        # Log cookies for debugging - use INFO level for visibility
+        # Log request details for debugging
         all_cookies = dict(request.COOKIES)
-        logger.info(f"🔍 Authentication attempt - Cookies received: {list(all_cookies.keys())}")
-        logger.info(f"🔍 All cookies: {all_cookies}")
-        logger.info(f"🔍 Looking for cookie: {settings.SIMPLE_JWT['AUTH_COOKIE']}")
-        logger.info(f"🔍 Token from cookie: {'Found' if raw_token else 'Not found'}")
-        logger.info(f"🔍 Request origin: {request.META.get('HTTP_ORIGIN', 'None')}")
-        logger.info(f"🔍 Request host: {request.META.get('HTTP_HOST', 'None')}")
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        logger.info(f"🔍 Authentication attempt - Origin: {request.META.get('HTTP_ORIGIN', 'None')}")
+        logger.info(f"🔍 Cookies received: {list(all_cookies.keys())}")
+        logger.info(f"🔍 Authorization header present: {bool(auth_header)}")
         
-        # If no cookie token, try Authorization header
-        if raw_token is None:
-            header = self.get_header(request)
-            if header is not None:
+        # Try Authorization header FIRST (better for cross-site requests)
+        header = self.get_header(request)
+        if header is not None:
+            try:
                 raw_token = self.get_raw_token(header)
-                logger.debug(f"🔍 Token from Authorization header: {'Found' if raw_token else 'Not found'}")
-                # Check if the token is "null" or empty
                 if raw_token:
-                    try:
-                        token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else raw_token
-                        if token_str in ['null', '', 'undefined', 'None']:
-                            raw_token = None
-                            logger.debug("🔍 Token is null/empty, ignoring")
-                    except (UnicodeDecodeError, AttributeError):
-                        # If decoding fails, try to use it as is
-                        pass
+                    # Check if the token is "null" or empty
+                    token_str = raw_token.decode('utf-8') if isinstance(raw_token, bytes) else raw_token
+                    if token_str not in ['null', '', 'undefined', 'None']:
+                        token_source = 'Authorization header'
+                        logger.info(f"🔍 ✅ Token found in Authorization header")
+                    else:
+                        raw_token = None
+                        logger.debug("🔍 Token in header is null/empty, ignoring")
+            except (UnicodeDecodeError, AttributeError) as e:
+                logger.debug(f"🔍 Error decoding token from header: {str(e)}")
+                raw_token = None
+        
+        # Fallback to cookies if no Authorization header token
+        if raw_token is None:
+            cookie_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+            if cookie_token:
+                raw_token = cookie_token
+                token_source = 'Cookie'
+                logger.info(f"🔍 ✅ Token found in cookie: {settings.SIMPLE_JWT['AUTH_COOKIE']}")
+            else:
+                logger.info(f"🔍 ❌ No token in cookie: {settings.SIMPLE_JWT['AUTH_COOKIE']}")
 
         if raw_token is None:
-            logger.debug("🔍 No valid token found - authentication failed")
+            logger.warning("🔍 ❌ No valid token found in Authorization header or cookies")
             return None
         
         try:
@@ -55,16 +64,16 @@ class CustomAuthentication(jwt_authentication.JWTAuthentication):
             if isinstance(raw_token, bytes):
                 raw_token = raw_token.decode('utf-8')
             
+            logger.info(f"🔍 Validating token from {token_source}...")
             validated_token = self.get_validated_token(raw_token)
+            user = self.get_user(validated_token)
+            logger.info(f"🔍 ✅ Authentication successful for user: {user.email if hasattr(user, 'email') else user.id}")
             # Skip CSRF check for API requests with valid JWT token
             # CSRF is mainly for form-based authentication
-            return self.get_user(validated_token), validated_token
+            return user, validated_token
         except Exception as e:
             # If token validation fails, return None to allow other auth methods
-            # Log the error for debugging
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.debug(f"Token validation failed: {str(e)}")
+            logger.warning(f"🔍 ❌ Token validation failed from {token_source}: {str(e)}")
             return None
 
     def get_user(self, validated_token):
