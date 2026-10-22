@@ -10,10 +10,19 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-msu85(n(%fr(h9*vcn(3asho7qxkxze3=8b2i2)q2e7+1rgt6(')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+
+if not SECRET_KEY:
+    settings_module = os.environ.get('DJANGO_SETTINGS_MODULE', '')
+    is_production_settings = settings_module.endswith('.production')
+    if DEBUG and not is_production_settings:
+        from django.core.management.utils import get_random_secret_key
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise RuntimeError("SECRET_KEY environment variable is required when running with DEBUG=False or production settings.")
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'olaf-backend.onrender.com,127.0.0.1,localhost').split(',')
 
