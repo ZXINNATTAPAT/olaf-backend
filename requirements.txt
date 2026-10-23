@@ -6,7 +6,7 @@ Django==5.2.17
 django-cors-headers==4.4.0
 django-markwhat==1.6.2
 djangorestframework==3.18.2
-djangorestframework-simplejwt==5.3.1
+djangorestframework-simplejwt==5.5.1
 gunicorn==23.0.0
 keyring==5.7.1
 markdown2==2.5.1
